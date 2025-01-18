@@ -1,12 +1,15 @@
-const express = require("express");
-const {
+import express from 'express';
+import {
   getContacts,
   getContactById,
-} = require("../controllers/contactsController");
+} from '../controllers/contactsController.js';
 
 const router = express.Router();
 
-router.get("/", getContacts);
-router.get("/:contactId", getContactById);
+// Роут для отримання всіх контактів
+router.get('/', getContacts);
 
-module.exports = router;
+// Роут для отримання контакту за ID
+router.get('/:contactId', getContactById);
+
+export default router;

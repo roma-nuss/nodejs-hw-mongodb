@@ -4,6 +4,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 (async () => {
-  await initMongoConnection();
-  setupServer();
+  try {
+    await initMongoConnection();
+    setupServer();
+  } catch (error) {
+    console.error('Failed to start the application:', error.message);
+    process.exit(1); // Завершуємо процес, якщо сталася критична помилка
+  }
 })();
