@@ -1,15 +1,9 @@
 import express from 'express';
-import {
-  getContacts,
-  getContactById,
-} from '../controllers/contactsController.js';
+import { getContacts } from '../controllers/contactsController.js'; // Убедитесь, что это правильно экспортируется
 
 const router = express.Router();
 
-// Роут для отримання всіх контактів
+// Путь для получения всех контактов
 router.get('/', getContacts);
-
-// Роут для отримання контакту за ID
-router.get('/:contactId', getContactById);
 
 export default router;
