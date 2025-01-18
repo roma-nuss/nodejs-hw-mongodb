@@ -1,8 +1,9 @@
+// src/server.js
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
-import contactsRoutes from './routes/contactsRoutes.js'; // импортируйте маршруты
+import contactsRoutes from './routes/contactsRoutes.js'; // Импорт маршрутов
 
 export function setupServer() {
   const logger = pino({ transport: { target: 'pino-pretty' } });
@@ -18,7 +19,7 @@ export function setupServer() {
   app.use(express.json());
 
   // Подключаем маршруты для контактов
-  app.use('/api/contacts', contactsRoutes); // вот здесь подключается маршрут
+  app.use('/api/contacts', contactsRoutes);
 
   // Обработка ошибок для неизвестных маршрутов
   app.use((req, res, next) => {

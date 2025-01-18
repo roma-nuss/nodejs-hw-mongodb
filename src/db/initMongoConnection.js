@@ -10,6 +10,7 @@ export const connectToMongo = async () => {
   const uri = `mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_URL}/${MONGODB_DB}?retryWrites=true&w=majority`;
 
   try {
+    // Убираем устаревшие параметры
     await mongoose.connect(uri);
     console.log('Mongo connection successfully established!');
   } catch (error) {
