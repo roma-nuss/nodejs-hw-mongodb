@@ -1,4 +1,3 @@
-// src/importContacts.js
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import fs from 'fs';
@@ -21,7 +20,7 @@ const connectToMongo = async () => {
     console.log('Mongo connection successfully established!');
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
-    process.exit(1); // Завершаем процесс с ошибкой
+    process.exit(1);
   }
 };
 
@@ -29,9 +28,9 @@ const importContacts = async () => {
   try {
     const contactsPath = path.join(__dirname, 'contacts.json');
     const contacts = JSON.parse(fs.readFileSync(contactsPath, 'utf8'));
-    console.log('Imported contacts:', contacts); // Логируем импорты
+    console.log('Imported contacts:', contacts);
 
-    await Contact.deleteMany(); // Очистить коллекцию перед импортом
+    await Contact.deleteMany();
     console.log('Existing contacts cleared.');
 
     await Contact.insertMany(contacts);

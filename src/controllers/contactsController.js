@@ -1,9 +1,8 @@
-// src/controllers/contactsController.js
 import Contact from '../models/contactModel.js';
 
 export const getContacts = async (req, res) => {
   try {
-    const contacts = await Contact.find(); // Получаем все контакты
+    const contacts = await Contact.find();
     if (!contacts || contacts.length === 0) {
       return res.status(404).json({ message: 'No contacts found' });
     }

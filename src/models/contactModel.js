@@ -1,4 +1,3 @@
-// src/models/contactModel.js
 import mongoose from 'mongoose';
 
 const contactSchema = new mongoose.Schema(
@@ -12,7 +11,7 @@ const contactSchema = new mongoose.Schema(
     updatedAt: { type: Date, required: true },
   },
   {
-    timestamps: false, // Отключаем автоматическое создание полей createdAt и updatedAt
+    timestamps: false,
   },
 );
 
