@@ -1,21 +1,13 @@
 import Contact from '../models/contactModel.js';
 
-// Функция для получения всех контактов
 export const findAllContacts = async () => {
   try {
-    const contacts = await Contact.find(); // Получаем все контакты
+    console.log('Fetching all contacts...');
+    const contacts = await Contact.find(); // Получаем все контакты из базы
+    console.log('Contacts fetched successfully:', contacts);
     return contacts;
   } catch (error) {
+    console.error('Error in findAllContacts:', error);
     throw new Error('Error retrieving contacts: ' + error.message);
-  }
-};
-
-// Функция для получения контакта по ID
-export const findContactById = async (contactId) => {
-  try {
-    const contact = await Contact.findById(contactId); // Ищем контакт по ID
-    return contact;
-  } catch (error) {
-    throw new Error('Error retrieving contact: ' + error.message);
   }
 };

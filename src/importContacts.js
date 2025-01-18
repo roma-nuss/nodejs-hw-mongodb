@@ -5,13 +5,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Contact from './models/contactModel.js';
 
-// Настройка для работы с __dirname в ES-модулях
+dotenv.config();
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config();
-
-// Подключение к MongoDB
 const connectToMongo = async () => {
   try {
     const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URL}/${process.env.MONGODB_DB}?retryWrites=true&w=majority`;
@@ -22,21 +20,19 @@ const connectToMongo = async () => {
     console.log('Mongo connection successfully established!');
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
-    process.exit(1); // Завершить процесс с ошибкой
+    process.exit(1); // Завершаем процесс с ошибкой
   }
 };
 
-// Импорт контактов в базу данных
 const importContacts = async () => {
   try {
     const contactsPath = path.join(__dirname, 'contacts.json');
     const contacts = JSON.parse(fs.readFileSync(contactsPath, 'utf8'));
+    console.log('Imported contacts:', contacts); // Логируем импорты
 
-    // Очистить коллекцию перед импортом
-    await Contact.deleteMany();
+    await Contact.deleteMany(); // Очистить коллекцию перед импортом
     console.log('Existing contacts cleared.');
 
-    // Импортировать контакты
     await Contact.insertMany(contacts);
     console.log('Contacts imported successfully!');
   } catch (error) {
@@ -46,7 +42,6 @@ const importContacts = async () => {
   }
 };
 
-// Запуск импорта
 const runImport = async () => {
   await connectToMongo();
   await importContacts();

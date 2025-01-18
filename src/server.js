@@ -8,29 +8,35 @@ export function setupServer() {
   const logger = pino({ transport: { target: 'pino-pretty' } });
   const app = express();
 
-  // Вмикаємо CORS
+  // Включаем CORS
   app.use(cors());
 
-  // Логування запитів
+  // Логирование запросов
   app.use(pinoHttp({ logger }));
 
-  // Додаємо парсинг JSON для body запитів
+  // Обработка JSON для body запросов
   app.use(express.json());
 
-  // Підключаємо маршрути
+  // Подключаем маршруты
   app.use('/api/contacts', contactsRoutes);
 
-  // Обробка помилок для невідомих маршрутів
+  // Обработчик ошибок для неизвестных маршрутов
   app.use((req, res, next) => {
     res.status(404).json({ message: 'Not found' });
   });
 
-  // Глобальна обробка помилок
+  // Глобальная обработка ошибок
   app.use((err, req, res, next) => {
-    logger.error(err);
-    res.status(err.status || 500).json({
-      message: err.message || 'Internal Server Error',
-    });
+    logger.error(err); // Логируем ошибку
+
+    // Проверка типа ошибки
+    if (err instanceof SyntaxError) {
+      res.status(400).json({ message: 'Invalid JSON format' });
+    } else {
+      res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Error',
+      });
+    }
   });
 
   // Запуск сервера

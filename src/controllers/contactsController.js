@@ -1,25 +1,25 @@
 // src/controllers/contactsController.js
-import { findAllContacts, findContactById } from '../services/contacts.js';
 
-// Получить все контакты
-export const getContacts = async (req, res) => {
-  try {
-    const contacts = await findAllContacts();
-    res.json(contacts);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+import Contact from '../models/contactModel.js'; // Добавьте этот импорт
 
-// Получить контакт по ID
+// Пример функции для получения контакта по ID
 export const getContactById = async (req, res) => {
   try {
-    const contact = await findContactById(req.params.contactId);
+    const contactId = req.params.id;
+    const contact = await Contact.findById(contactId);
+
     if (!contact) {
       return res.status(404).json({ message: 'Contact not found' });
     }
-    res.json(contact);
+
+    res.status(200).json(contact);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error in getContactById:', error);
+    res.status(500).json({ message: 'Error retrieving contact' });
   }
+};
+
+// Пример других экспортов, например:
+export const getContacts = async (req, res) => {
+  // код...
 };
