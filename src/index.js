@@ -1,8 +1,8 @@
 // src/index.js
 import express from 'express';
 import dotenv from 'dotenv';
-import { connectToMongo } from './db/initMongoConnection.js'; // Импортируем подключение к базе данных
-import contactsRoutes from './routes/contactsRoutes.js'; // Импортируем маршруты
+import { connectToMongo } from './db/initMongoConnection.js'; // Подключаем базу данных
+import contactsRoutes from './routes/contactsRoutes.js'; // Подключаем маршруты для контактов
 
 dotenv.config(); // Загружаем переменные окружения
 
