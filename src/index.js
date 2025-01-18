@@ -1,16 +1,20 @@
-// src/index.js
-import { connectToMongo } from './db/initMongoConnection.js'; // Импортируем функцию
-import { setupServer } from './server.js';
 import dotenv from 'dotenv';
+import { connectToMongo } from './db/initMongoConnection.js'; // Импортируем функцию для подключения
+import { setupServer } from './server.js'; // Импортируем функцию для настройки сервера
 
-dotenv.config();
+dotenv.config(); // Загружаем переменные окружения из .env файла
 
+// Асинхронная функция для запуска приложения
 (async () => {
   try {
-    await connectToMongo(); // Вызываем connectToMongo
+    // Подключаемся к базе данных MongoDB
+    await connectToMongo();
+
+    // Настроим и запустим сервер
     setupServer();
   } catch (error) {
+    // Логируем ошибку, если что-то пошло не так
     console.error('Failed to start the application:', error.message);
-    process.exit(1); // Завершаем процесс, если произошла ошибка
+    process.exit(1); // Завершаем процесс с ошибкой
   }
 })();
