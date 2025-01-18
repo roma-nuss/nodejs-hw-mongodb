@@ -9,7 +9,8 @@ dotenv.config();
 const { MONGODB_USER, MONGODB_PASSWORD, MONGODB_URL, MONGODB_DB } = process.env;
 
 // Подключение к MongoDB
-const connectToMongo = async () => {
+export const connectToMongo = async () => {
+  // Добавляем export
   const uri = `mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_URL}/${MONGODB_DB}?retryWrites=true&w=majority`;
 
   try {
