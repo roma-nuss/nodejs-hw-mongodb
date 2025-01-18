@@ -1,20 +1,24 @@
+// src/index.js
+import express from 'express';
 import dotenv from 'dotenv';
-import { connectToMongo } from './db/initMongoConnection.js'; // Импортируем функцию для подключения
-import { setupServer } from './server.js'; // Импортируем функцию для настройки сервера
+import { connectToMongo } from './db/initMongoConnection.js'; // Импортируем подключение к базе данных
+import contactsRoutes from './routes/contactsRoutes.js'; // Импортируем маршруты
 
-dotenv.config(); // Загружаем переменные окружения из .env файла
+dotenv.config(); // Загружаем переменные окружения
 
-// Асинхронная функция для запуска приложения
-(async () => {
+const app = express();
+
+// Подключаем маршруты для контактов
+app.use('/api/contacts', contactsRoutes);
+
+const port = process.env.PORT || 3000;
+
+app.listen(port, async () => {
   try {
-    // Подключаемся к базе данных MongoDB
-    await connectToMongo();
-
-    // Настроим и запустим сервер
-    setupServer();
+    await connectToMongo(); // Подключаемся к MongoDB
+    console.log(`Server is running on port ${port}`);
   } catch (error) {
-    // Логируем ошибку, если что-то пошло не так
     console.error('Failed to start the application:', error.message);
-    process.exit(1); // Завершаем процесс с ошибкой
+    process.exit(1); // Завершаем процесс, если произошла ошибка
   }
-})();
+});
