@@ -14,7 +14,6 @@ router.get('/', getContacts);
 // Получить контакт по ID
 router.get('/:id', getContactById);
 
-// Добавить новый контакт
 router.post('/', addContact);
 
 export default router;
