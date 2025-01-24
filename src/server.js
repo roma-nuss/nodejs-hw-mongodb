@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
-import contactsRouter from './routers/contacts.js';
+import contactsRouter from './routes/contactsRoutes.js';
 
 export function setupServer() {
   const logger = pino({ transport: { target: 'pino-pretty' } });
