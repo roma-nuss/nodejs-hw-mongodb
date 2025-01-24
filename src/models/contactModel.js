@@ -1,22 +1,31 @@
-// contactModel.js
 import mongoose from 'mongoose';
 
-const contactSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Name is required'],
+const contactSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Name is required'],
+    },
+    phoneNumber: {
+      type: String,
+      required: [true, 'Phone number is required'],
+      match: [/^\+?\d{10,15}$/, 'Invalid phone number format'],
+    },
+    email: {
+      type: String,
+      match: [/.+@.+\..+/, 'Invalid email format'],
+    },
+    isFavourite: {
+      type: Boolean,
+      default: false,
+    },
+    contactType: {
+      type: String,
+      enum: ['personal', 'business'],
+      required: [true, 'Contact type is required'],
+    },
   },
-  email: {
-    type: String,
-    required: [true, 'Email is required'],
-    unique: true,
-  },
-  phone: {
-    type: String,
-    required: [true, 'Phone is required'],
-  },
-});
+  { timestamps: true },
+);
 
-const Contact = mongoose.model('Contact', contactSchema);
-
-export default Contact;
+export default mongoose.model('Contact', contactSchema);

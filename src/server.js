@@ -2,9 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
-import contactsRoutes from './routes/contactsRoutes.js';
-import errorHandler from './middlewares/errorHandler.js';
-import notFoundHandler from './middlewares/notFoundHandler.js';
+import contactsRouter from './routers/contacts.js';
 
 export function setupServer() {
   const logger = pino({ transport: { target: 'pino-pretty' } });
@@ -14,16 +12,18 @@ export function setupServer() {
   app.use(pinoHttp({ logger }));
   app.use(express.json());
 
-  app.use('/api/contacts', contactsRoutes);
+  app.use('/api/contacts', contactsRouter);
 
-  // Middleware для обработки несуществующих маршрутов
-  app.use(notFoundHandler);
-
-  // Middleware для централизованной обработки ошибок
-  app.use(errorHandler);
-
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
+  app.use((req, res) => {
+    res.status(404).json({ message: 'Not found' });
   });
+
+  app.use((err, req, res, next) => {
+    logger.error(err);
+    res.status(err.status || 500).json({
+      message: err.message || 'Internal Server Error',
+    });
+  });
+
+  return app;
 }

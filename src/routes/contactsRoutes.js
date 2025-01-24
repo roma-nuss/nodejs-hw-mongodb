@@ -1,19 +1,19 @@
-// // // src/routes/contactsRoutes.js
 import express from 'express';
 import {
   getContacts,
   getContactById,
   addContact,
-} from '../controllers/contactsController.js';
+  updateContact,
+  deleteContact,
+} from '../controllers/contacts.js';
 
 const router = express.Router();
 
-// Получить все контакты
+// Роуты для работы с контактами
 router.get('/', getContacts);
-
-// Получить контакт по ID
-router.get('/:id', getContactById);
-
+router.get('/:contactId', getContactById);
 router.post('/', addContact);
+router.patch('/:contactId', updateContact); // Обновление контакта
+router.delete('/:contactId', deleteContact); // Удаление контакта
 
 export default router;
