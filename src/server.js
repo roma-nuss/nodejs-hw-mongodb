@@ -13,7 +13,7 @@ export function setupServer() {
   app.use(pinoHttp({ logger }));
   app.use(express.json());
 
-  app.use('/api/contacts', contactsRouter); // Все маршруты /api/contacts
+  app.use('/contacts', contactsRouter);
 
   // Обработка 404
   app.use((req, res) => {
