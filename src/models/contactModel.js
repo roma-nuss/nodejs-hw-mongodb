@@ -1,20 +1,21 @@
-//src/models/contactModel.js
+// contactModel.js
 import mongoose from 'mongoose';
 
-const contactSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    phoneNumber: { type: String, required: true },
-    email: { type: String, required: false },
-    isFavourite: { type: Boolean, required: true },
-    contactType: { type: String, required: true },
-    createdAt: { type: Date, required: true },
-    updatedAt: { type: Date, required: true },
+const contactSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Name is required'],
   },
-  {
-    timestamps: false,
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
   },
-);
+  phone: {
+    type: String,
+    required: [true, 'Phone is required'],
+  },
+});
 
 const Contact = mongoose.model('Contact', contactSchema);
 
