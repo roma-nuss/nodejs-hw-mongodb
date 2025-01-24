@@ -1,25 +1,39 @@
-const mongoose = require('mongoose');
-const fs = require('fs');
-const Contact = require('./models/contact');
-const { MONGODB_USER, MONGODB_PASSWORD, MONGODB_URL, MONGODB_DB } = process.env;
+//src/importContacts.js
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import Contact from './models/contactModel.js';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const connectToMongo = async () => {
-  const uri = `mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_URL}/${MONGODB_DB}?retryWrites=true&w=majority`;
-  await mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  console.log('Mongo connection successfully established!');
+  try {
+    const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URL}/${process.env.MONGODB_DB}?retryWrites=true&w=majority`;
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('Mongo connection successfully established!');
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error);
+    process.exit(1);
+  }
 };
 
 const importContacts = async () => {
   try {
-    const contacts = JSON.parse(fs.readFileSync('./contacts.json', 'utf8'));
+    const contactsPath = path.join(__dirname, 'contacts.json');
+    const contacts = JSON.parse(fs.readFileSync(contactsPath, 'utf8'));
+    console.log('Imported contacts:', contacts);
 
-    // Перш ніж імпортувати, очищаємо колекцію
     await Contact.deleteMany();
+    console.log('Existing contacts cleared.');
 
-    // Імпортуємо нові дані
     await Contact.insertMany(contacts);
     console.log('Contacts imported successfully!');
   } catch (error) {

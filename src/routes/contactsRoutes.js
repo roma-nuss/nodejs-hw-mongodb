@@ -1,15 +1,19 @@
+// // // src/routes/contactsRoutes.js
 import express from 'express';
 import {
   getContacts,
   getContactById,
+  addContact,
 } from '../controllers/contactsController.js';
 
 const router = express.Router();
 
-// Роут для отримання всіх контактів
+// Получить все контакты
 router.get('/', getContacts);
 
-// Роут для отримання контакту за ID
-router.get('/:contactId', getContactById);
+// Получить контакт по ID
+router.get('/:id', getContactById);
+
+router.post('/', addContact);
 
 export default router;
