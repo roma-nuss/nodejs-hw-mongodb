@@ -1,3 +1,5 @@
+//src/utils/ctrlWrapper.js
+
 export const ctrlWrapper = (ctrl) => {
   return async (req, res, next) => {
     try {

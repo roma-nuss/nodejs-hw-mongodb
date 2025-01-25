@@ -1,3 +1,4 @@
+//src/models/contactModel.js
 import mongoose from 'mongoose';
 
 const contactSchema = new mongoose.Schema(
@@ -25,7 +26,7 @@ const contactSchema = new mongoose.Schema(
       required: [true, 'Contact type is required'],
     },
   },
-  { timestamps: true },
+  { timestamps: true, versionKey: false }, // Отключаем поле _v
 );
 
 export default mongoose.model('Contact', contactSchema);

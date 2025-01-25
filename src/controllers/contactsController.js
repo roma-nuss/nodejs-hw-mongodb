@@ -1,96 +1,66 @@
 // src/controllers/contactsController.js
-import Contact from '../models/contactModel.js'; // Импорт модели контакта
-import createError from 'http-errors'; // Удобный инструмент для обработки ошибок
+import Contact from '../models/contactModel.js';
+import createError from 'http-errors';
 
-// Получение всех контактов
-export const getContacts = async (req, res, next) => {
-  try {
-    const contacts = await Contact.find(); // Получаем все контакты
-    res.status(200).json({
-      status: 200,
-      message: 'Contacts retrieved successfully',
-      data: contacts, // Отправляем данные
-    });
-  } catch (error) {
-    next(error); // Передаем ошибку в обработчик ошибок
-  }
+export const getContacts = async (req, res) => {
+  const contacts = await Contact.find();
+  res.status(200).json({
+    status: 200,
+    message: 'Contacts retrieved successfully',
+    data: contacts,
+  });
 };
 
-// Получение контакта по ID
-export const getContactById = async (req, res, next) => {
-  try {
-    const { contactId } = req.params; // Извлекаем contactId из параметров
+export const getContactById = async (req, res) => {
+  const { contactId } = req.params;
+  const contact = await Contact.findById(contactId);
 
-    // Ищем контакт по ID
-    const contact = await Contact.findById(contactId);
+  if (!contact) throw createError(404, 'Contact not found');
 
-    if (!contact) throw createError(404, 'Contact not found'); // Если контакт не найден, выбрасываем ошибку
-
-    res.status(200).json({
-      status: 200,
-      message: 'Contact retrieved successfully',
-      data: contact, // Отправляем данные контакта
-    });
-  } catch (error) {
-    next(error); // Передаем ошибку в обработчик ошибок
-  }
+  res.status(200).json({
+    status: 200,
+    message: 'Contact retrieved successfully',
+    data: contact,
+  });
 };
 
-// Создание нового контакта
-export const addContact = async (req, res, next) => {
-  try {
-    const newContact = await Contact.create(req.body); // Создаем новый контакт
-
-    res.status(201).json({
-      status: 201,
-      message: 'Contact created successfully',
-      data: newContact, // Отправляем созданный контакт
-    });
-  } catch (error) {
-    next(error); // Передаем ошибку в обработчик ошибок
-  }
+export const addContact = async (req, res) => {
+  const newContact = await Contact.create(req.body);
+  res.status(201).json({
+    status: 201,
+    message: 'Contact created successfully',
+    data: newContact,
+  });
 };
 
-// Обновление контакта
-export const updateContact = async (req, res, next) => {
-  try {
-    const { contactId } = req.params; // Извлекаем contactId из параметров
-    const updates = req.body; // Получаем данные для обновления из тела запроса
+export const updateContact = async (req, res) => {
+  const { contactId } = req.params;
+  const updates = req.body;
 
-    // Обновляем контакт по ID
-    const updatedContact = await Contact.findByIdAndUpdate(contactId, updates, {
-      new: true, // Вернуть обновленный объект
-      runValidators: true, // Запустить валидацию при обновлении
-    });
+  const updatedContact = await Contact.findByIdAndUpdate(contactId, updates, {
+    new: true,
+    runValidators: true,
+  });
 
-    if (!updatedContact) throw createError(404, 'Contact not found'); // Если контакт не найден, выбрасываем ошибку
+  if (!updatedContact) throw createError(404, 'Contact not found');
 
-    res.status(200).json({
-      status: 200,
-      message: 'Contact updated successfully',
-      data: updatedContact, // Отправляем обновленные данные контакта
-    });
-  } catch (error) {
-    next(error); // Передаем ошибку в обработчик ошибок
-  }
+  res.status(200).json({
+    status: 200,
+    message: 'Contact updated successfully',
+    data: updatedContact,
+  });
 };
 
-// Удаление контакта
-export const deleteContact = async (req, res, next) => {
-  try {
-    const { contactId } = req.params; // Извлекаем contactId из параметров
+export const deleteContact = async (req, res) => {
+  const { contactId } = req.params;
 
-    // Удаляем контакт по ID
-    const deletedContact = await Contact.findByIdAndDelete(contactId);
+  const deletedContact = await Contact.findByIdAndDelete(contactId);
 
-    if (!deletedContact) throw createError(404, 'Contact not found'); // Если контакт не найден, выбрасываем ошибку
+  if (!deletedContact) throw createError(404, 'Contact not found');
 
-    res.status(200).json({
-      status: 200,
-      message: 'Contact deleted successfully',
-      data: deletedContact, // Отправляем удаленный контакт
-    });
-  } catch (error) {
-    next(error); // Передаем ошибку в обработчик ошибок
-  }
+  res.status(200).json({
+    status: 200,
+    message: 'Contact deleted successfully',
+    data: deletedContact,
+  });
 };

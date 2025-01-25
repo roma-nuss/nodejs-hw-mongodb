@@ -1,4 +1,3 @@
-//src/routes/contactsRoutes.js
 import express from 'express';
 import {
   getContacts,
@@ -7,14 +6,14 @@ import {
   updateContact,
   deleteContact,
 } from '../controllers/contactsController.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
 const router = express.Router();
 
-// Роуты для работы с контактами
-router.get('/', getContacts);
-router.get('/:contactId', getContactById);
-router.post('/', addContact);
-router.patch('/:contactId', updateContact); // Обновление контакта
-router.delete('/:contactId', deleteContact); // Удаление контакта
+router.get('/', ctrlWrapper(getContacts));
+router.get('/:contactId', ctrlWrapper(getContactById));
+router.post('/', ctrlWrapper(addContact));
+router.patch('/:contactId', ctrlWrapper(updateContact));
+router.delete('/:contactId', ctrlWrapper(deleteContact));
 
 export default router;
