@@ -1,9 +1,9 @@
-// src/server.js
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
-import contactsRouter from './routes/contactsRoutes.js'; // Подключаем маршруты
+import contactsRouter from './routes/contactsRoutes.js';
+import authRoutes from './routes/authRoutes.js'; // Подключаем маршруты для аутентификации
 
 export function setupServer() {
   const logger = pino({ transport: { target: 'pino-pretty' } });
@@ -13,7 +13,8 @@ export function setupServer() {
   app.use(pinoHttp({ logger }));
   app.use(express.json());
 
-  app.use('/contacts', contactsRouter);
+  app.use('/contacts', contactsRouter); // Маршруты для контактов
+  app.use('/auth', authRoutes); // Маршруты для аутентификации
 
   // Обработка 404
   app.use((req, res) => {

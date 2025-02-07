@@ -13,8 +13,12 @@ import {
   deleteContact,
 } from '../controllers/contactsController.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import { authenticate } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
+
+// Защита маршрутов
+router.use(authenticate);
 
 router.get('/', ctrlWrapper(getContacts));
 router.get('/:contactId', isValidId, ctrlWrapper(getContactById));
@@ -27,4 +31,4 @@ router.patch(
 );
 router.delete('/:contactId', isValidId, ctrlWrapper(deleteContact));
 
-export default router; // Экспорт по умолчанию
+export default router;

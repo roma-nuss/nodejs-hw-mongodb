@@ -1,4 +1,3 @@
-//src/index.js
 import dotenv from 'dotenv';
 import { setupServer } from './server.js';
 import { connectToMongo } from './db/initMongoConnection.js';
