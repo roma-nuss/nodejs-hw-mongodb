@@ -1,4 +1,3 @@
-//src/models/contactModel.js
 import mongoose from 'mongoose';
 
 const contactSchema = new mongoose.Schema(
@@ -24,6 +23,11 @@ const contactSchema = new mongoose.Schema(
       type: String,
       enum: ['personal', 'business'],
       required: [true, 'Contact type is required'],
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User', // Указываем связь с моделью пользователя
+      required: [true, 'User ID is required'],
     },
   },
   { timestamps: true, versionKey: false }, // Отключаем поле _v

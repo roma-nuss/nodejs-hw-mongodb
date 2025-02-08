@@ -13,22 +13,23 @@ import {
   deleteContact,
 } from '../controllers/contactsController.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { authenticate } from '../middlewares/authMiddleware.js';
+import { authenticate } from '../middlewares/authenticate.js'; // Исправлен импорт на корректный middleware
 
 const router = express.Router();
 
 // Защита маршрутов
 router.use(authenticate);
 
-router.get('/', ctrlWrapper(getContacts));
-router.get('/:contactId', isValidId, ctrlWrapper(getContactById));
-router.post('/', validateBody(contactSchema), ctrlWrapper(addContact));
+// Роуты для работы с контактами
+router.get('/', ctrlWrapper(getContacts)); // Получение всех контактов для авторизованного пользователя
+router.get('/:contactId', isValidId, ctrlWrapper(getContactById)); // Получение контакта по ID
+router.post('/', validateBody(contactSchema), ctrlWrapper(addContact)); // Создание нового контакта
 router.patch(
   '/:contactId',
   isValidId,
   validateBody(updateContactSchema),
   ctrlWrapper(updateContact),
-);
-router.delete('/:contactId', isValidId, ctrlWrapper(deleteContact));
+); // Обновление контакта
+router.delete('/:contactId', isValidId, ctrlWrapper(deleteContact)); // Удаление контакта
 
 export default router;

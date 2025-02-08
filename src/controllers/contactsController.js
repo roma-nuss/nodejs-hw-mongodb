@@ -34,7 +34,7 @@ export const getContacts = async (req, res) => {
     contactType,
   } = req.query;
 
-  const filter = {};
+  const filter = { userId: req.user._id }; // Фильтруем по userId
   if (isFavourite !== undefined) filter.isFavourite = isFavourite === 'true';
   if (contactType) filter.contactType = contactType;
 
@@ -67,7 +67,10 @@ export const getContacts = async (req, res) => {
 export const getContactById = async (req, res) => {
   const { contactId } = req.params;
 
-  const contact = await Contact.findById(contactId);
+  const contact = await Contact.findOne({
+    _id: contactId,
+    userId: req.user._id,
+  });
   if (!contact) throw createError(404, 'Contact not found');
 
   res.status(200).json({
@@ -81,7 +84,10 @@ export const addContact = async (req, res) => {
   const { error } = contactSchema.validate(req.body);
   if (error) throw createError(400, error.details[0].message);
 
-  const newContact = await Contact.create(req.body);
+  const newContact = await Contact.create({
+    ...req.body,
+    userId: req.user._id,
+  }); // Добавляем userId
   res.status(201).json({
     status: 201,
     message: 'Contact created successfully',
@@ -94,10 +100,11 @@ export const updateContact = async (req, res) => {
   const { error } = updateContactSchema.validate(req.body);
   if (error) throw createError(400, error.details[0].message);
 
-  const updatedContact = await Contact.findByIdAndUpdate(contactId, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const updatedContact = await Contact.findOneAndUpdate(
+    { _id: contactId, userId: req.user._id },
+    req.body,
+    { new: true, runValidators: true },
+  );
 
   if (!updatedContact) throw createError(404, 'Contact not found');
 
@@ -111,7 +118,10 @@ export const updateContact = async (req, res) => {
 export const deleteContact = async (req, res) => {
   const { contactId } = req.params;
 
-  const deletedContact = await Contact.findByIdAndDelete(contactId);
+  const deletedContact = await Contact.findOneAndDelete({
+    _id: contactId,
+    userId: req.user._id,
+  });
   if (!deletedContact) throw createError(404, 'Contact not found');
 
   res.status(200).json({
