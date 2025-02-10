@@ -1,3 +1,4 @@
+//src/services/authService.js
 import bcrypt from 'bcrypt';
 import User from '../models/userModel.js';
 import createError from 'http-errors';
