@@ -157,9 +157,22 @@ export const logoutUser = async (req, res, next) => {
 
     // Декодирование токена
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+
+    // Удаление сессии из базы данных
     await Session.deleteOne({ userId: decoded.id });
 
-    res.status(204).send(); // Статус 204 для успешного логаута
+    // Очистка cookies
+    res.clearCookie('sessionId', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+    });
+
+    // Статус 204 для успешного логаута
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

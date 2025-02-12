@@ -1,10 +1,10 @@
-// src/services/authService.js
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
-
+import Session from '../models/sessionModel.js'; // Импорт модели сессии
 import createError from 'http-errors';
 
+// Регистрация пользователя
 export const register = async ({ name, email, password }) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -22,7 +22,7 @@ export const register = async ({ name, email, password }) => {
   return newUser;
 };
 
-// Генерація refresh token
+// Генерация токенов
 export const generateTokens = (userId) => {
   const accessToken = jwt.sign({ id: userId }, process.env.JWT_ACCESS_SECRET, {
     expiresIn: '1h',
@@ -37,4 +37,15 @@ export const generateTokens = (userId) => {
   );
 
   return { accessToken, refreshToken };
+};
+
+// Логаут пользователя
+export const logoutUser = async (userId) => {
+  try {
+    // Удаляем сессию пользователя по userId
+    await Session.deleteOne({ userId });
+  } catch (error) {
+    console.error('Error during logout:', error); // Логируем ошибку
+    throw createError(500, 'Failed to logout user');
+  }
 };

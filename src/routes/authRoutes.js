@@ -1,4 +1,3 @@
-//src/routes/authRoutes.js
 import express from 'express';
 import { validateBody } from '../middlewares/validateBody.js';
 import authenticate from '../middlewares/authenticate.js'; // Middleware для проверки токена
@@ -6,7 +5,7 @@ import {
   registerUser,
   loginUser,
   refreshToken,
-  logoutUser,
+  logoutUser, // Обновленный контроллер для логаута
 } from '../controllers/authController.js';
 import { registerSchema, loginSchema } from '../validators/authValidators.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
@@ -27,6 +26,6 @@ router.post('/login', validateBody(loginSchema), ctrlWrapper(loginUser));
 router.post('/refresh', ctrlWrapper(refreshToken));
 
 // Роут для логаута
-router.post('/logout', authenticate, ctrlWrapper(logoutUser));
+router.post('/logout', authenticate, ctrlWrapper(logoutUser)); // Использование обновленного контроллера
 
 export default router;
