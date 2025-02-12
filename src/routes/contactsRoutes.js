@@ -1,4 +1,3 @@
-//src/routes/contactsRoutes.js
 import express from 'express';
 import { validateBody } from '../middlewares/validateBody.js';
 import { isValidId } from '../middlewares/isValidId.js';
@@ -14,7 +13,7 @@ import {
   deleteContact,
 } from '../controllers/contactsController.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { authenticate } from '../middlewares/authenticate.js'; // Исправлен импорт на корректный middleware
+import authenticate from '../middlewares/authenticate.js'; // Исправлен импорт на корректный middleware
 
 const router = express.Router();
 
