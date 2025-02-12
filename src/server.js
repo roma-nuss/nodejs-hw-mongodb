@@ -4,7 +4,7 @@ import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 import contactsRouter from './routes/contactsRoutes.js';
-import authRoutes from './routes/auth.js';
+import authRoutes from './routes/authRoutes.js';
 
 export function setupServer() {
   const logger = pino({ transport: { target: 'pino-pretty' } });
