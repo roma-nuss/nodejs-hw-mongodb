@@ -4,6 +4,7 @@ import pino from 'pino';
 import pinoHttp from 'pino-http';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv'; // Добавлен импорт для работы с переменными окружения
+import cookieParser from 'cookie-parser'; // Подключаем cookie-parser
 
 dotenv.config(); // Загружаем переменные окружения
 
@@ -30,6 +31,9 @@ export function setupServer() {
 
   // Подключение к базе данных
   connectDB();
+
+  // Подключаем middleware cookie-parser
+  app.use(cookieParser()); // Теперь можем работать с cookies
 
   app.use(cors());
   app.use(pinoHttp({ logger }));
