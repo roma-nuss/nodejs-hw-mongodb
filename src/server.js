@@ -3,7 +3,7 @@ import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv'; // Добавьте этот импорт для работы с переменными окружения
+import dotenv from 'dotenv'; // Добавлен импорт для работы с переменными окружения
 
 dotenv.config(); // Загружаем переменные окружения
 
@@ -15,10 +15,11 @@ const connectDB = async () => {
   try {
     const dbUri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URL}/${process.env.MONGODB_DB}?retryWrites=true&w=majority`;
 
+    console.log('Connecting to MongoDB with URI:', dbUri); // Логируем URI подключения для отладки
     await mongoose.connect(dbUri); // Используем собранную строку для подключения
     console.log('Connected to the database');
   } catch (error) {
-    console.error('Database connection error:', error);
+    console.error('Database connection error:', error); // Логируем ошибку подключения
     process.exit(1); // Если ошибка при подключении, сервер не запускается
   }
 };
