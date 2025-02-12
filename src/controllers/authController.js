@@ -1,44 +1,47 @@
 // src/controllers/authController.js
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import moment from 'moment';
-import User from '../models/userModel.js';
+import createError from 'http-errors';
 import Session from '../models/sessionModel.js';
-import createHttpError from 'http-errors';
+import User from '../models/userModel.js';
+import { generateTokens } from '../services/authService.js';
 
 // Регистрация пользователя
 export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-      throw createHttpError(400, 'Name, email, and password are required');
-    }
-
+    // Проверка существующего пользователя
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw createHttpError(409, 'Email is already in use');
+      throw createError(409, 'Email in use');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({
+
+    const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
-      isActive: true, // Добавляем пользователя как активного по умолчанию
     });
 
+    const { accessToken, refreshToken } = generateTokens(newUser._id);
+
+    // Создание сессии для хранения refreshToken
+    const session = new Session({
+      userId: newUser._id,
+      refreshToken,
+      refreshTokenValidUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
+    });
+
+    await session.save();
+
     res.status(201).json({
-      status: 201,
-      message: 'User created successfully',
-      data: { id: user._id, email: user.email, name: user.name },
+      accessToken,
+      refreshToken,
     });
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      next(createHttpError(400, error.message));
-    } else {
-      next(error);
-    }
+    next(error);
   }
 };
 
@@ -47,127 +50,88 @@ export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      throw createHttpError(400, 'Email and password are required');
-    }
-
     const user = await User.findOne({ email });
     if (!user) {
-      throw createHttpError(401, 'Invalid email or password');
+      throw createError(401, 'Invalid email or password');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw createHttpError(401, 'Invalid email or password');
+      throw createError(401, 'Invalid email or password');
     }
 
-    if (!user.isActive) {
-      throw createHttpError(401, 'User account is not active'); // Проверка активности аккаунта
-    }
+    const { accessToken, refreshToken } = generateTokens(user._id);
 
-    const accessToken = jwt.sign(
-      { id: user._id },
-      process.env.JWT_ACCESS_SECRET,
-      { expiresIn: '15m' },
-    );
-    const refreshToken = jwt.sign(
-      { id: user._id },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: '7d' },
-    );
-
-    const accessTokenValidUntil = moment().add(15, 'minutes').toDate();
-    const refreshTokenValidUntil = moment().add(7, 'days').toDate();
-
-    const session = await Session.create({
+    // Создание сессии для хранения refreshToken
+    const session = new Session({
       userId: user._id,
+      refreshToken,
+      refreshTokenValidUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
+    });
+
+    await session.save();
+
+    res.json({
       accessToken,
       refreshToken,
-      accessTokenValidUntil,
-      refreshTokenValidUntil,
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-    res.cookie('sessionId', session._id.toString(), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    res.status(200).json({
-      status: 200,
-      message: 'Successfully logged in!',
-      data: { accessToken },
     });
   } catch (error) {
     next(error);
   }
 };
 
-// Обновление токена
+// Обновление токенов
 export const refreshToken = async (req, res, next) => {
   try {
-    const { refreshToken } = req.cookies;
+    const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      throw createHttpError(401, 'Refresh token is missing');
+      throw createError(400, 'Refresh token is required');
     }
 
-    const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-
-    const session = await Session.findOne({
-      userId: payload.id,
-      refreshToken,
-    });
-
+    const session = await Session.findOne({ refreshToken });
     if (!session) {
-      throw createHttpError(401, 'Invalid session or refresh token');
+      throw createError(401, 'Invalid or expired refresh token');
     }
 
-    const accessToken = jwt.sign(
-      { id: payload.id },
+    // Проверка на срок действия refresh token
+    if (session.refreshTokenValidUntil < new Date()) {
+      throw createError(401, 'Refresh token expired');
+    }
+
+    const user = await User.findById(session.userId);
+    if (!user) {
+      throw createError(401, 'User not found');
+    }
+
+    const newAccessToken = jwt.sign(
+      { id: user._id },
       process.env.JWT_ACCESS_SECRET,
-      { expiresIn: '15m' },
+      { expiresIn: '1h' },
     );
 
-    res.status(200).json({
-      status: 200,
-      message: 'Token refreshed successfully',
-      data: { accessToken },
-    });
+    res.json({ accessToken: newAccessToken });
   } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      next(createHttpError(401, 'Refresh token expired'));
-    } else {
-      next(error);
-    }
+    next(error);
   }
 };
 
-// Выход пользователя
+// Логаут пользователя
 export const logoutUser = async (req, res, next) => {
   try {
-    const { sessionId, refreshToken } = req.cookies || {}; // Проверка на пустой объект
+    const { authorization } = req.headers;
 
-    if (!sessionId || !refreshToken) {
-      throw createHttpError(401, 'Session ID or refresh token is missing');
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      throw createError(401, 'Authorization header is missing or invalid');
     }
 
-    const session = await Session.findByIdAndDelete(sessionId);
-    if (!session) {
-      throw createHttpError(401, 'Invalid session');
-    }
+    const token = authorization.split(' ')[1];
 
-    // Очищаем cookies в ответе
-    res.clearCookie('refreshToken');
-    res.clearCookie('sessionId');
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    await Session.deleteOne({ userId: decoded.id });
 
-    res.status(204).send(); // Ответ без тела (No Content)
+    res.status(204).send(); // 204 статус для успешного логаута
   } catch (error) {
-    next(error); // Передаем ошибку в обработчик
+    next(error);
   }
 };
