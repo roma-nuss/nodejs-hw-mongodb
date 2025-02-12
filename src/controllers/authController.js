@@ -32,6 +32,7 @@ export const registerUser = async (req, res, next) => {
       refreshTokenValidUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
     });
 
+    // Устанавливаем refreshToken в куки без использования cookie-parser
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -69,6 +70,7 @@ export const loginUser = async (req, res, next) => {
       refreshTokenValidUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
+    // Устанавливаем refreshToken в куки без использования cookie-parser
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -89,32 +91,38 @@ export const loginUser = async (req, res, next) => {
 // Обновление токенов
 export const refreshToken = async (req, res, next) => {
   try {
-    const { refreshToken } = req.cookies;
+    // Получаем refreshToken из куки (без cookie-parser)
+    const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
       throw createError(400, 'Refresh token is required');
     }
 
+    // Находим сессию по refreshToken
     const session = await Session.findOne({ refreshToken });
     if (!session || session.refreshTokenValidUntil < new Date()) {
       throw createError(401, 'Invalid or expired refresh token');
     }
 
+    // Находим пользователя по ID из сессии
     const user = await User.findById(session.userId);
     if (!user) {
       throw createError(401, 'User not found');
     }
 
+    // Генерация нового accessToken
     const newAccessToken = jwt.sign(
       { id: user._id },
       process.env.JWT_ACCESS_SECRET,
       { expiresIn: '1h' },
     );
 
+    // Обновление сессии с новым accessToken
     session.accessToken = newAccessToken;
-    session.accessTokenValidUntil = new Date(Date.now() + 1 * 60 * 60 * 1000);
+    session.accessTokenValidUntil = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 час
     await session.save();
 
+    // Возврат нового accessToken
     res.status(200).json({
       status: 200,
       message: 'Successfully refreshed a session!',
@@ -128,7 +136,8 @@ export const refreshToken = async (req, res, next) => {
 // Логаут пользователя
 export const logoutUser = async (req, res, next) => {
   try {
-    const { refreshToken } = req.cookies;
+    // Получаем refreshToken из куки (без cookie-parser)
+    const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
       throw createError(401, 'Refresh token is required');
@@ -141,6 +150,7 @@ export const logoutUser = async (req, res, next) => {
 
     await Session.deleteOne({ refreshToken });
 
+    // Удаляем refreshToken из куки
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
