@@ -1,3 +1,4 @@
+// src/controllers/authController.js
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
@@ -24,6 +25,7 @@ export const registerUser = async (req, res, next) => {
       name,
       email,
       password: hashedPassword,
+      isActive: true, // Добавляем пользователя как активного по умолчанию
     });
 
     res.status(201).json({
@@ -59,7 +61,10 @@ export const loginUser = async (req, res, next) => {
       throw createHttpError(401, 'Invalid email or password');
     }
 
-    // Генерация access и refresh токенов
+    if (!user.isActive) {
+      throw createHttpError(401, 'User account is not active'); // Проверка активности аккаунта
+    }
+
     const accessToken = jwt.sign(
       { id: user._id },
       process.env.JWT_ACCESS_SECRET,
@@ -71,11 +76,9 @@ export const loginUser = async (req, res, next) => {
       { expiresIn: '7d' },
     );
 
-    // Время истечения токенов
     const accessTokenValidUntil = moment().add(15, 'minutes').toDate();
     const refreshTokenValidUntil = moment().add(7, 'days').toDate();
 
-    // Сессия пользователя
     const session = await Session.create({
       userId: user._id,
       accessToken,
@@ -84,16 +87,15 @@ export const loginUser = async (req, res, next) => {
       refreshTokenValidUntil,
     });
 
-    // Установка cookies с refresh token и sessionId
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.cookie('sessionId', session._id.toString(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({
@@ -115,10 +117,8 @@ export const refreshToken = async (req, res, next) => {
       throw createHttpError(401, 'Refresh token is missing');
     }
 
-    // Проверка действительности refreshToken
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
-    // Поиск сессии по refreshToken
     const session = await Session.findOne({
       userId: payload.id,
       refreshToken,
@@ -128,7 +128,6 @@ export const refreshToken = async (req, res, next) => {
       throw createHttpError(401, 'Invalid session or refresh token');
     }
 
-    // Генерация нового accessToken
     const accessToken = jwt.sign(
       { id: payload.id },
       process.env.JWT_ACCESS_SECRET,
@@ -158,13 +157,11 @@ export const logoutUser = async (req, res, next) => {
       throw createHttpError(401, 'Session ID is missing');
     }
 
-    // Удаление сессии пользователя
     const session = await Session.findByIdAndDelete(sessionId);
     if (!session) {
       throw createHttpError(401, 'Invalid session');
     }
 
-    // Очистка cookies
     res.clearCookie('refreshToken');
     res.clearCookie('sessionId');
 

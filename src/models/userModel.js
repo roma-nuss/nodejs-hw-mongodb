@@ -1,4 +1,4 @@
-//src/models/userModel.js
+// src/models/userModel.js
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
@@ -16,6 +16,10 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Password is required'],
+    },
+    isActive: {
+      type: Boolean,
+      default: true, // Устанавливаем значение поля isActive как true по умолчанию
     },
   },
   { timestamps: true, versionKey: false }, // Отключаем поле _v
