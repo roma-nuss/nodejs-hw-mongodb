@@ -90,8 +90,14 @@ export const loginUser = async (req, res, next) => {
 
     await session.save();
 
-    // Ответ с токенами
+    // Ответ с информацией о пользователе и токенами
     res.json({
+      message: 'Login successful',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
       accessToken,
       refreshToken,
     });
