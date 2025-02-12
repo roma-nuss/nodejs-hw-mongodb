@@ -90,16 +90,18 @@ export const loginUser = async (req, res, next) => {
 
     await session.save();
 
+    // Устанавливаем refreshToken в cookies
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
+    });
+
     // Ответ с информацией о пользователе и токенами
-    res.json({
-      message: 'Login successful',
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
-      accessToken,
-      refreshToken,
+    res.status(200).json({
+      status: 200,
+      message: 'Successfully logged in an user!',
+      data: { accessToken },
     });
   } catch (error) {
     next(error);
@@ -109,7 +111,7 @@ export const loginUser = async (req, res, next) => {
 // Обновление токенов
 export const refreshToken = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body;
+    const { refreshToken } = req.cookies;
 
     if (!refreshToken) {
       throw createError(400, 'Refresh token is required');
@@ -138,7 +140,11 @@ export const refreshToken = async (req, res, next) => {
       { expiresIn: '1h' },
     );
 
-    res.json({ accessToken: newAccessToken });
+    res.json({
+      status: 200,
+      message: 'Successfully refreshed a session!',
+      data: { accessToken: newAccessToken },
+    });
   } catch (error) {
     next(error);
   }
@@ -147,35 +153,29 @@ export const refreshToken = async (req, res, next) => {
 // Логаут пользователя
 export const logoutUser = async (req, res, next) => {
   try {
-    const { authorization } = req.headers;
+    const { refreshToken } = req.cookies;
 
-    if (!authorization || !authorization.startsWith('Bearer ')) {
-      throw createError(401, 'Authorization header is missing or invalid');
+    if (!refreshToken) {
+      throw createError(401, 'Refresh token is required');
     }
 
-    const token = authorization.split(' ')[1];
-
-    // Декодирование токена
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    // Поиск сессии по refreshToken
+    const session = await Session.findOne({ refreshToken });
+    if (!session) {
+      throw createError(401, 'Invalid refresh token');
+    }
 
     // Удаление сессии из базы данных
-    await Session.deleteOne({ userId: decoded.id });
-
-    // Логируем успешный логаут
-    console.log(`User with ID ${decoded.id} has successfully logged out.`);
+    await Session.deleteOne({ refreshToken });
 
     // Очистка cookies
-    res.clearCookie('sessionId', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-    });
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
     });
 
     // Ответ клиенту, подтверждающий успешный логаут
-    res.status(204).send('User logged out successfully');
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

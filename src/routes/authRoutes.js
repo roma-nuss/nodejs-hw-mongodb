@@ -1,3 +1,4 @@
+//src/routes/authRoutes.js
 import express from 'express';
 import { validateBody } from '../middlewares/validateBody.js';
 import authenticate from '../middlewares/authenticate.js'; // Middleware для проверки токена
