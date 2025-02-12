@@ -90,12 +90,12 @@ export const loginUser = async (req, res, next) => {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
     res.cookie('sessionId', session._id.toString(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
 
     res.status(200).json({
@@ -151,10 +151,10 @@ export const refreshToken = async (req, res, next) => {
 // Выход пользователя
 export const logoutUser = async (req, res, next) => {
   try {
-    const { sessionId } = req.cookies;
+    const { sessionId, refreshToken } = req.cookies;
 
-    if (!sessionId) {
-      throw createHttpError(401, 'Session ID is missing');
+    if (!sessionId || !refreshToken) {
+      throw createHttpError(401, 'Session ID or refresh token is missing');
     }
 
     const session = await Session.findByIdAndDelete(sessionId);
@@ -162,11 +162,12 @@ export const logoutUser = async (req, res, next) => {
       throw createHttpError(401, 'Invalid session');
     }
 
+    // Очищаем cookies в ответе
     res.clearCookie('refreshToken');
     res.clearCookie('sessionId');
 
-    res.status(204).send(); // Ответ без тела
+    res.status(204).send(); // Ответ без тела (No Content)
   } catch (error) {
-    next(error);
+    next(error); // Передаем ошибку в обработчик
   }
 };
