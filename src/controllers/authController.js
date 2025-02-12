@@ -90,12 +90,12 @@ export const loginUser = async (req, res, next) => {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.cookie('sessionId', session._id.toString(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({
@@ -151,7 +151,7 @@ export const refreshToken = async (req, res, next) => {
 // Выход пользователя
 export const logoutUser = async (req, res, next) => {
   try {
-    const { sessionId, refreshToken } = req.cookies;
+    const { sessionId, refreshToken } = req.cookies || {}; // Проверка на пустой объект
 
     if (!sessionId || !refreshToken) {
       throw createHttpError(401, 'Session ID or refresh token is missing');
