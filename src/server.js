@@ -1,10 +1,10 @@
-//src/server.js
+// src/server.js
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 import contactsRouter from './routes/contactsRoutes.js';
-import authRoutes from './routes/authRoutes.js'; // Подключаем маршруты для аутентификации
+import authRoutes from './routes/authRoutes.js';
 
 export function setupServer() {
   const logger = pino({ transport: { target: 'pino-pretty' } });
@@ -14,15 +14,15 @@ export function setupServer() {
   app.use(pinoHttp({ logger }));
   app.use(express.json());
 
-  app.use('/contacts', contactsRouter); // Маршруты для контактов
-  app.use('/auth', authRoutes); // Маршруты для аутентификации
+  app.use('/contacts', contactsRouter);
+  app.use('/auth', authRoutes);
 
-  // Обработка 404
+  // Обробка 404
   app.use((req, res) => {
     res.status(404).json({ message: 'Not found' });
   });
 
-  // Обработка ошибок
+  // Обробка помилок
   app.use((err, req, res, next) => {
     logger.error(err);
     res.status(err.status || 500).json({
