@@ -59,10 +59,6 @@ export const loginUser = async (req, res, next) => {
       throw createHttpError(401, 'Invalid email or password');
     }
 
-    if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
-      throw createHttpError(500, 'JWT secrets are not defined');
-    }
-
     const accessToken = jwt.sign(
       { id: user._id },
       process.env.JWT_ACCESS_SECRET,
@@ -115,16 +111,13 @@ export const refreshToken = async (req, res, next) => {
       throw createHttpError(401, 'Refresh token is missing');
     }
 
-    if (!process.env.JWT_REFRESH_SECRET) {
-      throw createHttpError(500, 'JWT refresh secret is not defined');
-    }
-
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
     const session = await Session.findOne({
       userId: payload.id,
       refreshToken,
     });
+
     if (!session) {
       throw createHttpError(401, 'Invalid session or refresh token');
     }
@@ -166,10 +159,7 @@ export const logoutUser = async (req, res, next) => {
     res.clearCookie('refreshToken');
     res.clearCookie('sessionId');
 
-    res.status(200).json({
-      status: 200,
-      message: 'Successfully logged out!',
-    });
+    res.status(204).send(); // Ответ без тела
   } catch (error) {
     next(error);
   }
