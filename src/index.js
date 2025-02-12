@@ -1,14 +1,21 @@
-import { initMongoConnection } from './db/initMongoConnection.js';
-import { setupServer } from './server.js';
+//src/index.js
 import dotenv from 'dotenv';
+import { setupServer } from './server.js';
+import { connectToMongo } from './db/initMongoConnection.js';
+
 dotenv.config();
+
+const PORT = process.env.PORT || 3000;
 
 (async () => {
   try {
-    await initMongoConnection();
-    setupServer();
+    await connectToMongo();
+    const app = setupServer();
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
   } catch (error) {
-    console.error('Failed to start the application:', error.message);
-    process.exit(1); // Завершуємо процес, якщо сталася критична помилка
+    console.error('Failed to initialize server:', error.message);
+    process.exit(1);
   }
 })();
