@@ -5,6 +5,7 @@ import pinoHttp from 'pino-http';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv'; // Добавлен импорт для работы с переменными окружения
 import cookieParser from 'cookie-parser'; // Подключаем cookie-parser
+import { initMiddleware } from './controllers/authController.js'; // Путь к authController.js
 
 dotenv.config(); // Загружаем переменные окружения
 
@@ -34,6 +35,9 @@ export function setupServer() {
 
   // Подключаем middleware cookie-parser
   app.use(cookieParser()); // Теперь можем работать с cookies
+
+  // Инициализация middleware для работы с cookies
+  initMiddleware(app);
 
   app.use(cors());
   app.use(pinoHttp({ logger }));
