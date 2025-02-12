@@ -43,8 +43,14 @@ export const registerUser = async (req, res, next) => {
 
     await session.save();
 
-    // Ответ с токенами
+    // Ответ с информацией о пользователе и токенами
     res.status(201).json({
+      message: 'User registered successfully',
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+      },
       accessToken,
       refreshToken,
     });
