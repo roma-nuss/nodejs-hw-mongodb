@@ -161,6 +161,9 @@ export const logoutUser = async (req, res, next) => {
     // Удаление сессии из базы данных
     await Session.deleteOne({ userId: decoded.id });
 
+    // Логируем успешный логаут
+    console.log(`User with ID ${decoded.id} has successfully logged out.`);
+
     // Очистка cookies
     res.clearCookie('sessionId', {
       httpOnly: true,
@@ -171,8 +174,8 @@ export const logoutUser = async (req, res, next) => {
       secure: process.env.NODE_ENV === 'production',
     });
 
-    // Статус 204 для успешного логаута
-    res.status(204).send();
+    // Ответ клиенту, подтверждающий успешный логаут
+    res.status(204).send('User logged out successfully');
   } catch (error) {
     next(error);
   }
