@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import createHttpError from 'http-errors';
+import createError from 'http-errors';
 import User from '../models/userModel.js';
 
 const authenticate = async (req, res, next) => {
@@ -8,33 +8,37 @@ const authenticate = async (req, res, next) => {
 
     // Проверяем наличие заголовка Authorization
     if (!authorization || !authorization.startsWith('Bearer ')) {
-      throw createHttpError(401, 'Authorization header is missing or invalid');
+      throw createError(401, 'Authorization header is missing or invalid');
     }
 
     // Извлекаем токен
-    const token = authorization.split(' ')[1]; // Более безопасный способ извлечения токена
+    const token = authorization.split(' ')[1];
 
     // Проверяем валидность токена
-    const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        throw createError(401, 'Token has expired');
+      }
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw createError(401, 'Invalid token');
+      }
+      throw error;
+    }
 
     // Проверяем существование пользователя
     const user = await User.findById(payload.id);
     if (!user) {
-      throw createHttpError(401, 'User not found or unauthorized');
+      throw createError(401, 'User not found');
     }
 
     // Сохраняем информацию о пользователе в запросе
     req.user = user;
     next();
   } catch (error) {
-    // Обработка ошибок токена
-    if (error.name === 'JsonWebTokenError') {
-      next(createHttpError(401, 'Invalid token'));
-    } else if (error.name === 'TokenExpiredError') {
-      next(createHttpError(401, 'Token has expired'));
-    } else {
-      next(error); // Пробрасываем остальные ошибки
-    }
+    next(error); // Передаем ошибку в обработчик
   }
 };
 
