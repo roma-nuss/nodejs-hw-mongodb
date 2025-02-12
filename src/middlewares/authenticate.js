@@ -1,44 +1,45 @@
-// src/middlewares/authenticate.js
 import jwt from 'jsonwebtoken';
-import createError from 'http-errors';
+import createHttpError from 'http-errors';
 import User from '../models/userModel.js';
 
-export const authenticate = async (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
-    const { authorization } = req.headers;
+    const authHeader = req.headers.authorization;
 
     // Проверяем наличие заголовка Authorization
-    if (!authorization || !authorization.startsWith('Bearer ')) {
-      throw createError(401, 'Authorization header is missing or invalid');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw createHttpError(401, 'Authorization header is missing or invalid');
     }
 
-    // Извлекаем токен
-    const token = authorization.replace('Bearer ', '');
+    const token = authHeader.split(' ')[1];
 
-    // Проверяем валидность токена
-    let payload;
-    try {
-      payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-    } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
-        throw createError(401, 'Token has expired');
-      }
-      if (error instanceof jwt.JsonWebTokenError) {
-        throw createError(401, 'Invalid token');
-      }
-      throw error;
+    // Проверяем наличие токена
+    if (!token) {
+      throw createHttpError(401, 'Authorization token is missing');
     }
 
-    // Проверяем существование пользователя
+    // Верифицируем токен
+    const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+
+    // Проверяем, существует ли пользователь
     const user = await User.findById(payload.id);
     if (!user) {
-      throw createError(401, 'User not found');
+      throw createHttpError(401, 'User not found or unauthorized');
     }
 
-    // Сохраняем информацию о пользователе в запросе
+    // Добавляем данные пользователя в запрос
     req.user = user;
+
     next();
   } catch (error) {
-    next(error); // Передаем ошибку в обработчик
+    if (error.name === 'JsonWebTokenError') {
+      next(createHttpError(401, 'Invalid token'));
+    } else if (error.name === 'TokenExpiredError') {
+      next(createHttpError(401, 'Token has expired'));
+    } else {
+      next(error);
+    }
   }
 };
+
+export default authenticate;
