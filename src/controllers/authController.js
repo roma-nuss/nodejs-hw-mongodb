@@ -1,4 +1,3 @@
-// src/controllers/authController.js
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import createError from 'http-errors';
@@ -19,26 +18,32 @@ export const registerUser = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Создание нового пользователя
     const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
     });
 
+    // Генерация токенов
     const { accessToken, refreshToken } = generateTokens(newUser._id);
 
-    // Создание сессии для хранения токенов
+    // Создание сессии для хранения refreshToken
     const session = new Session({
       userId: newUser._id,
-      accessToken, // Добавляем accessToken
-      accessTokenValidUntil: new Date(Date.now() + 60 * 60 * 1000), // 1 час
       refreshToken,
       refreshTokenValidUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
     });
 
     await session.save();
 
+    // Логирование нового пользователя
+    console.log('New User:', newUser);
+
+    // Возвращаем информацию о пользователе, а также токены
     res.status(201).json({
+      message: 'User registered successfully',
+      user: newUser, // Возвращаем данные о новом пользователе
       accessToken,
       refreshToken,
     });
@@ -64,11 +69,9 @@ export const loginUser = async (req, res, next) => {
 
     const { accessToken, refreshToken } = generateTokens(user._id);
 
-    // Создание сессии для хранения токенов
+    // Создание сессии для хранения refreshToken
     const session = new Session({
       userId: user._id,
-      accessToken, // Добавляем accessToken
-      accessTokenValidUntil: new Date(Date.now() + 60 * 60 * 1000), // 1 час
       refreshToken,
       refreshTokenValidUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
     });
