@@ -1,4 +1,3 @@
-//src/controllers/authController.js
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import createError from 'http-errors';
@@ -156,21 +155,23 @@ export const logoutUser = async (req, res, next) => {
       throw createError(401, 'Refresh token is required');
     }
 
+    // Находим сессию по refreshToken
     const session = await Session.findOne({ refreshToken });
     if (!session) {
       throw createError(401, 'Invalid refresh token');
     }
 
+    // Удаляем сессию из базы данных
     await Session.deleteOne({ refreshToken });
 
     // Удаляем refreshToken из куки
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production', // Только в продакшн
       sameSite: 'strict',
     });
 
-    res.status(204).send();
+    res.status(204).send(); // Возвращаем статус 204, так как контент не нужен
   } catch (error) {
     console.error(error); // Логирование ошибки
     next(error);
