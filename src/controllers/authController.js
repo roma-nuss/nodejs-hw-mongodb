@@ -27,9 +27,11 @@ export const registerUser = async (req, res, next) => {
 
     const { accessToken, refreshToken } = generateTokens(newUser._id);
 
-    // Создание сессии для хранения refreshToken
+    // Создание сессии для хранения токенов
     const session = new Session({
       userId: newUser._id,
+      accessToken, // Добавляем accessToken
+      accessTokenValidUntil: new Date(Date.now() + 60 * 60 * 1000), // 1 час
       refreshToken,
       refreshTokenValidUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
     });
@@ -62,9 +64,11 @@ export const loginUser = async (req, res, next) => {
 
     const { accessToken, refreshToken } = generateTokens(user._id);
 
-    // Создание сессии для хранения refreshToken
+    // Создание сессии для хранения токенов
     const session = new Session({
       userId: user._id,
+      accessToken, // Добавляем accessToken
+      accessTokenValidUntil: new Date(Date.now() + 60 * 60 * 1000), // 1 час
       refreshToken,
       refreshTokenValidUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
     });
