@@ -5,21 +5,20 @@ import User from '../models/userModel.js';
 
 const authenticate = async (req, res, next) => {
   try {
-    console.log('Authorization Header:', req.headers.authorization); // Логирование заголовка
+    console.log('Cookies:', req.cookies); // Логирование всех кукис
 
-    const { authorization } = req.headers;
+    // Получаем refreshToken из куки
+    const refreshToken = req.cookies.refreshToken;
 
-    if (!authorization || !authorization.startsWith('Bearer ')) {
-      console.error('Authorization header is missing or invalid');
-      throw createError(401, 'Authorization header is missing or invalid');
+    if (!refreshToken) {
+      console.error('Refresh token is missing or invalid');
+      throw createError(401, 'Refresh token is required');
     }
 
-    const token = authorization.split(' ')[1];
-    console.log('Extracted Token:', token); // Для отладки
-
+    // Проверяем и декодируем refreshToken
     let payload;
     try {
-      payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+      payload = jwt.verify(refreshToken, process.env.JWT_ACCESS_SECRET);
       console.log('Token payload:', payload); // Для отладки
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
@@ -34,6 +33,7 @@ const authenticate = async (req, res, next) => {
       throw createError(500, 'Internal server error');
     }
 
+    // Находим пользователя по ID из токена
     const user = await User.findById(payload.id);
     if (!user) {
       console.error('User not found in the database');
@@ -45,10 +45,11 @@ const authenticate = async (req, res, next) => {
       throw createError(401, 'User account is not active');
     }
 
+    // Сохраняем пользователя в запросе для дальнейшей работы
     req.user = user;
     console.log('Authenticated user:', user); // Для отладки
 
-    next();
+    next(); // Переходим к следующему middleware
   } catch (error) {
     console.error('Authentication Error:', error.message); // Логируем общую ошибку
     next(error); // Передаем ошибку в обработчик
