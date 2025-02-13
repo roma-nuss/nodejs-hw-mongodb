@@ -11,7 +11,7 @@ const contactSchema = Joi.object({
     .required(),
   email: Joi.string().email().optional(),
   isFavourite: Joi.boolean().optional(),
-  contactType: Joi.string().valid('personal', 'business').required(),
+  contactType: Joi.string().valid('work', 'home', 'personal').required(), // Обновлено на work, home, personal
 });
 
 const updateContactSchema = Joi.object({
@@ -21,7 +21,7 @@ const updateContactSchema = Joi.object({
     .optional(),
   email: Joi.string().email().optional(),
   isFavourite: Joi.boolean().optional(),
-  contactType: Joi.string().valid('personal', 'business').optional(),
+  contactType: Joi.string().valid('work', 'home', 'personal').optional(), // Обновлено на work, home, personal
 });
 
 export const getContacts = async (req, res, next) => {
