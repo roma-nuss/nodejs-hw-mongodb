@@ -1,4 +1,4 @@
-//src/models/contactModel.js
+// src/models/contactModel.js
 import mongoose from 'mongoose';
 
 const contactSchema = new mongoose.Schema(
@@ -22,7 +22,7 @@ const contactSchema = new mongoose.Schema(
     },
     contactType: {
       type: String,
-      enum: ['personal', 'business'],
+      enum: ['work', 'home', 'personal'], // Обновлено на work, home, personal
       required: [true, 'Contact type is required'],
     },
     userId: {
