@@ -22,7 +22,7 @@ const contactSchema = new mongoose.Schema(
     },
     contactType: {
       type: String,
-      enum: ['work', 'home', 'personal'], // Обновлено на work, home, personal
+      enum: ['work', 'home', 'personal'], // Ограничение на work, home, personal
       required: [true, 'Contact type is required'],
     },
     userId: {
