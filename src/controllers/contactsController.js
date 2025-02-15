@@ -1,150 +1,131 @@
-// src/controllers/contactsController.js
-import Contact from '../models/contactModel.js';
-import createError from 'http-errors';
-import Joi from 'joi';
+//src/controllers/contactsController.js
 
-// Схемы валидации с использованием Joi
-const contactSchema = Joi.object({
-  name: Joi.string().min(3).max(20).required(),
-  phoneNumber: Joi.string()
-    .pattern(/^\+?\d{10,15}$/)
-    .required(),
-  email: Joi.string().email().optional(),
-  isFavourite: Joi.boolean().optional(),
-  contactType: Joi.string().valid('work', 'home', 'personal').required(), // Обновлено на work, home, personal
-});
+// Импортируем зависимости
+import createHttpError from 'http-errors'; // Для создания HTTP ошибок с кодами
+import {
+  createContact, // Функция для создания контакта
+  deleteContact, // Функция для удаления контакта
+  getAllContacts, // Функция для получения всех контактов
+  getContactById, // Функция для получения контакта по ID
+  updateContact, // Функция для обновления контакта
+} from '../services/contacts.js'; // Импортируем сервисы для работы с контактами
+import { parsePaginationParams } from '../utils/parsePaginationParams.js'; // Функция для парсинга параметров пагинации
+import { parseSortParams } from '../utils/parseSortParams.js'; // Функция для парсинга параметров сортировки
+import { parseFilterParams } from '../utils/parseFilterParams.js'; // Функция для парсинга параметров фильтрации
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js'; // Функция для сохранения файлов в директорию
+import { getEnvVar } from '../utils/getEnvVar.js'; // Функция для получения переменных окружения
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js'; // Функция для сохранения файлов на Cloudinary
 
-const updateContactSchema = Joi.object({
-  name: Joi.string().min(3).max(20).optional(),
-  phoneNumber: Joi.string()
-    .pattern(/^\+?\d{10,15}$/)
-    .optional(),
-  email: Joi.string().email().optional(),
-  isFavourite: Joi.boolean().optional(),
-  contactType: Joi.string().valid('work', 'home', 'personal').optional(), // Обновлено на work, home, personal
-});
-
-export const getContacts = async (req, res, next) => {
-  const {
-    page = 1,
-    perPage = 10,
-    sortBy = 'name',
-    sortOrder = 'asc',
-    isFavourite,
-    contactType,
-  } = req.query;
-
-  const filter = { userId: req.user._id }; // Фильтруем по userId
-  if (isFavourite !== undefined) filter.isFavourite = isFavourite === 'true';
-  if (contactType) filter.contactType = contactType;
-
-  const sortDirection = sortOrder === 'desc' ? -1 : 1;
-  const skip = (page - 1) * perPage;
-
-  try {
-    const [contacts, totalItems] = await Promise.all([
-      Contact.find(filter)
-        .sort({ [sortBy]: sortDirection })
-        .skip(skip)
-        .limit(Number(perPage)),
-      Contact.countDocuments(filter),
-    ]);
-
-    res.status(200).json({
-      status: 200,
-      message: 'Contacts retrieved successfully',
-      data: {
-        data: contacts,
-        page: Number(page),
-        perPage: Number(perPage),
-        totalItems,
-        totalPages: Math.ceil(totalItems / perPage),
-        hasPreviousPage: page > 1,
-        hasNextPage: skip + Number(perPage) < totalItems,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
+// Контроллер для получения всех контактов с учетом пагинации, сортировки и фильтрации
+export const getContactsController = async (req, res) => {
+  // Парсим параметры пагинации из query строки
+  const { page, perPage } = parsePaginationParams(req.query);
+  // Парсим параметры сортировки из query строки
+  const { sortOrder, sortBy } = parseSortParams(req.query);
+  // Получаем ID пользователя из запроса
+  const userId = req.user._id;
+  // Парсим параметры фильтрации из query строки
+  const filter = parseFilterParams(req.query);
+  // Получаем все контакты с учетом переданных параметров
+  const contacts = await getAllContacts({
+    page,
+    perPage,
+    sortOrder,
+    sortBy,
+    filter,
+    userId,
+  });
+  // Отправляем успешный ответ с найденными контактами
+  res.json({
+    status: 200,
+    message: 'Successfully found contacts!',
+    data: contacts,
+  });
 };
 
-export const getContactById = async (req, res, next) => {
-  const { contactId } = req.params;
+// Контроллер для получения контакта по ID
+export const getContactByIdController = async (req, res) => {
+  const { contactId } = req.params; // Получаем ID контакта из параметров запроса
+  const userId = req.user._id; // Получаем ID пользователя
+  // Получаем контакт по ID и ID пользователя
+  const contact = await getContactById(contactId, userId);
 
-  try {
-    const contact = await Contact.findOne({
-      _id: contactId,
-      userId: req.user._id,
-    });
-    if (!contact) throw createError(404, 'Contact not found');
-
-    res.status(200).json({
-      status: 200,
-      message: 'Contact retrieved successfully',
-      data: contact,
-    });
-  } catch (error) {
-    next(error);
+  // Если контакт не найден, генерируем ошибку 404
+  if (!contact) {
+    throw createHttpError(404, 'Contact not found');
   }
+
+  // Отправляем успешный ответ с найденным контактом
+  res.json({
+    status: 200,
+    message: `Successfully found contact by id ${contactId}!`,
+    data: contact,
+  });
 };
 
-export const addContact = async (req, res, next) => {
-  const { error } = contactSchema.validate(req.body);
-  if (error) throw createError(400, error.details[0].message);
+// Контроллер для создания нового контакта
+export const createContactController = async (req, res) => {
+  const contactData = { ...req.body, userId: req.user._id }; // Добавляем ID пользователя к данным контакта
+  // Создаем контакт через сервис
+  const contact = await createContact(contactData);
 
-  try {
-    const newContact = await Contact.create({
-      ...req.body,
-      userId: req.user._id,
-    });
-
-    res.status(201).json({
-      status: 201,
-      message: 'Contact created successfully',
-      data: newContact,
-    });
-  } catch (error) {
-    next(error);
-  }
+  // Отправляем успешный ответ с данными нового контакта
+  res.status(201).json({
+    status: 201,
+    message: 'Successfully created a contact!',
+    data: contact,
+  });
 };
 
-export const updateContact = async (req, res, next) => {
-  const { contactId } = req.params;
-  const { error } = updateContactSchema.validate(req.body);
-  if (error) throw createError(400, error.details[0].message);
+// Контроллер для обновления контакта (PATCH)
+export const patchContactController = async (req, res, next) => {
+  const { contactId } = req.params; // Получаем ID контакта из параметров запроса
+  const userId = req.user._id; // Получаем ID пользователя
+  const photo = req.file; // Получаем файл фотографии (если он есть)
+  let photoUrl;
 
-  try {
-    const updatedContact = await Contact.findOneAndUpdate(
-      { _id: contactId, userId: req.user._id },
-      req.body,
-      { new: true, runValidators: true },
-    );
-
-    if (!updatedContact) throw createError(404, 'Contact not found');
-
-    res.status(200).json({
-      status: 200,
-      message: 'Contact updated successfully',
-      data: updatedContact,
-    });
-  } catch (error) {
-    next(error);
+  // Если файл фотографии есть, сохраняем его в Cloudinary или локально
+  if (photo) {
+    if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo); // Сохраняем в Cloudinary
+    } else {
+      photoUrl = await saveFileToUploadDir(photo); // Сохраняем в локальную директорию
+    }
   }
+
+  // Обновляем контакт с новыми данными (и возможной фотографией)
+  const result = await updateContact(contactId, userId, {
+    ...req.body,
+    photo: photoUrl, // Добавляем URL фотографии
+  });
+
+  // Если контакт не найден, генерируем ошибку 404
+  if (!result) {
+    next(createHttpError(404, 'Contact not found'));
+    return;
+  }
+
+  // Отправляем успешный ответ с обновленным контактом
+  res.json({
+    status: 200,
+    message: 'Successfully patched a contact!',
+    data: result,
+  });
 };
 
-export const deleteContact = async (req, res, next) => {
-  const { contactId } = req.params;
+// Контроллер для удаления контакта
+export const deleteContactController = async (req, res, next) => {
+  const { contactId } = req.params; // Получаем ID контакта из параметров запроса
+  const userId = req.user._id; // Получаем ID пользователя
+  // Удаляем контакт по ID и ID пользователя
+  const contact = await deleteContact(contactId, userId);
 
-  try {
-    const deletedContact = await Contact.findOneAndDelete({
-      _id: contactId,
-      userId: req.user._id,
-    });
-
-    if (!deletedContact) throw createError(404, 'Contact not found');
-
-    res.status(204).send(); // Статус 204, без тела ответа
-  } catch (error) {
-    next(error);
+  // Если контакт не найден, генерируем ошибку 404
+  if (!contact) {
+    next(createHttpError(404, 'Contact not found'));
+    return;
   }
+
+  // Отправляем успешный ответ с кодом 204 (без содержания)
+  res.status(204).send();
 };

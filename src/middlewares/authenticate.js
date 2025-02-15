@@ -1,59 +1,36 @@
-// src/middlewares/authenticate.js
-import jwt from 'jsonwebtoken';
-import createError from 'http-errors';
-import User from '../models/userModel.js';
+//src/middlewares/authenticate.js
+import createHttpError from 'http-errors';
+import { SessionsCollection } from '../db/models/sessionModel.js';
+import { UsersCollection } from '../db/models/userModel.js';
 
-const authenticate = async (req, res, next) => {
-  try {
-    console.log('Cookies:', req.cookies); // Логирование всех кукис
-
-    // Получаем refreshToken из куки
-    const refreshToken = req.cookies.refreshToken;
-
-    if (!refreshToken) {
-      console.error('Refresh token is missing or invalid');
-      throw createError(401, 'Refresh token is required');
-    }
-
-    // Проверяем и декодируем refreshToken
-    let payload;
-    try {
-      payload = jwt.verify(refreshToken, process.env.JWT_ACCESS_SECRET);
-      console.log('Token payload:', payload); // Для отладки
-    } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
-        console.error('Token has expired');
-        throw createError(401, 'Token has expired');
-      }
-      if (error instanceof jwt.JsonWebTokenError) {
-        console.error('Invalid token');
-        throw createError(401, 'Invalid token');
-      }
-      console.error('Unexpected JWT error:', error.message);
-      throw createError(500, 'Internal server error');
-    }
-
-    // Находим пользователя по ID из токена
-    const user = await User.findById(payload.id);
-    if (!user) {
-      console.error('User not found in the database');
-      throw createError(401, 'User not found');
-    }
-
-    if (!user.isActive) {
-      console.error('User account is not active');
-      throw createError(401, 'User account is not active');
-    }
-
-    // Сохраняем пользователя в запросе для дальнейшей работы
-    req.user = user;
-    console.log('Authenticated user:', user); // Для отладки
-
-    next(); // Переходим к следующему middleware
-  } catch (error) {
-    console.error('Authentication Error:', error.message); // Логируем общую ошибку
-    next(error); // Передаем ошибку в обработчик
+export const authenticate = async (req, res, next) => {
+  const authHeader = req.get('Authorization');
+  if (!authHeader) {
+    next(createHttpError(401, 'Please provide Authorization header'));
+    return;
   }
-};
+  const bearer = authHeader.split(' ')[0];
+  const token = authHeader.split(' ')[1];
+  if (bearer !== 'Bearer' || !token) {
+    next(createHttpError(401, 'Auth header should be of type Bearer'));
+    return;
+  }
+  const session = await SessionsCollection.findOne({ accessToken: token });
+  if (!session) {
+    next(createHttpError(401, 'Session not found'));
+    return;
+  }
+  const isAccessTokenExpired =
+    new Date() > new Date(session.accessTokenValidUntil);
 
-export default authenticate;
+  if (isAccessTokenExpired) {
+    next(createHttpError(401, 'Access token expired'));
+  }
+  const user = await UsersCollection.findById(session.userId);
+  if (!user) {
+    next(createHttpError(401));
+    return;
+  }
+  req.user = user;
+  next();
+};

@@ -1,8 +1,8 @@
 {
-  "name": "node.js",
+  "name": "nodejs-hw-mongodb",
   "version": "1.0.0",
-  "main": "index.js",
   "type": "module",
+  "main": "src/index.js",
   "scripts": {
     "dev": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,25 +10,27 @@
   "author": "roma_nuss",
   "license": "ISC",
   "description": "",
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
+    "nodemon": "^3.1.9",
+    "pino-pretty": "^13.0.0"
+  },
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "handlebars": "^4.7.8",
     "http-errors": "^2.0.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "moment": "^2.30.1",
-    "mongodb": "^6.12.0",
     "mongoose": "^8.9.5",
-    "pino-http": "^10.4.0",
-    "pino-pretty": "^13.0.0"
-  },
-  "devDependencies": {
-    "eslint": "^9.18.0",
-    "nodemon": "^3.1.9",
-    "pino": "^9.6.0",
-    "prettier": "^3.4.2"
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.0",
+    "pino-http": "^10.4.0"
   }
 }

@@ -1,21 +1,19 @@
 //src/index.js
-import dotenv from 'dotenv';
+import { TEMP_UPLOAD_DIR, UPLOAD_DIR } from './constants/index.js';
+import { initMongoConnection } from './db/initMongoConnection.js';
 import { setupServer } from './server.js';
-import { connectToMongo } from './db/initMongoConnection.js';
+import { createDirIfNotExists } from './utils/createDirIfNotExists.js';
 
-dotenv.config();
+const bootstrap = async () => {
+  await initMongoConnection();
+  await createDirIfNotExists(TEMP_UPLOAD_DIR);
+  await createDirIfNotExists(UPLOAD_DIR);
+  setupServer();
+};
 
-const PORT = process.env.PORT || 3000;
+bootstrap();
 
-(async () => {
-  try {
-    await connectToMongo();
-    const app = setupServer();
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to initialize server:', error.message);
-    process.exit(1);
-  }
-})();
+export const SORT_ORDER = {
+  ASC: 'asc',
+  DESC: 'desc',
+};
