@@ -1,7 +1,7 @@
 // src/middlewares/authenticate.js
 import jwt from 'jsonwebtoken';
 import createError from 'http-errors';
-import User from '../models/userModel.js';
+import { User } from '../models/userModel.js';
 
 const authenticate = async (req, res, next) => {
   try {
@@ -21,28 +21,26 @@ const authenticate = async (req, res, next) => {
       payload = jwt.verify(refreshToken, process.env.JWT_ACCESS_SECRET);
       console.log('Token payload:', payload); // Для отладки
     } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
-        console.error('Token has expired');
-        throw createError(401, 'Token has expired');
-      }
-      if (error instanceof jwt.JsonWebTokenError) {
-        console.error('Invalid token');
-        throw createError(401, 'Invalid token');
-      }
-      console.error('Unexpected JWT error:', error.message);
-      throw createError(500, 'Internal server error');
+      const errorMessage =
+        error instanceof jwt.TokenExpiredError
+          ? 'Token has expired'
+          : error instanceof jwt.JsonWebTokenError
+            ? 'Invalid token'
+            : 'Unexpected JWT error';
+      console.error(errorMessage, error.message);
+      throw createError(401, errorMessage); // Обработка различных типов ошибок
     }
 
     // Находим пользователя по ID из токена
     const user = await User.findById(payload.id);
     if (!user) {
       console.error('User not found in the database');
-      throw createError(401, 'User not found');
+      throw createError(404, 'User not found');
     }
 
     if (!user.isActive) {
       console.error('User account is not active');
-      throw createError(401, 'User account is not active');
+      throw createError(403, 'User account is not active'); // Статус 403 - доступ запрещен
     }
 
     // Сохраняем пользователя в запросе для дальнейшей работы

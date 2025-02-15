@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import createError from 'http-errors';
 import cookieParser from 'cookie-parser'; // Подключаем cookie-parser
 import Session from '../models/sessionModel.js';
-import User from '../models/userModel.js';
+import { User } from '../models/userModel.js';
 import { generateTokens } from '../services/authService.js';
 
 // Middleware для cookie-parser

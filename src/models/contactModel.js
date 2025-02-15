@@ -30,6 +30,10 @@ const contactSchema = new mongoose.Schema(
       ref: 'User', // Указываем связь с моделью пользователя
       required: [true, 'User ID is required'],
     },
+    photo: {
+      type: String, // Новое поле для хранения ссылки на фото
+      default: '', // Если фото не загружено, оставляем пустую строку
+    },
   },
   { timestamps: true, versionKey: false }, // Отключаем поле _v
 );

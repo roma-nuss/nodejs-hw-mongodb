@@ -25,4 +25,4 @@ const userSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }, // Отключаем поле _v
 );
 
-export default mongoose.model('User', userSchema);
+export const User = mongoose.model('User', userSchema); // Именованный экспорт

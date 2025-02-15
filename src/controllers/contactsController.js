@@ -2,6 +2,14 @@
 import Contact from '../models/contactModel.js';
 import createError from 'http-errors';
 import Joi from 'joi';
+import cloudinary from 'cloudinary';
+
+// Конфигурация Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // Схемы валидации с использованием Joi
 const contactSchema = Joi.object({
@@ -11,7 +19,7 @@ const contactSchema = Joi.object({
     .required(),
   email: Joi.string().email().optional(),
   isFavourite: Joi.boolean().optional(),
-  contactType: Joi.string().valid('work', 'home', 'personal').required(), // Обновлено на work, home, personal
+  contactType: Joi.string().valid('work', 'home', 'personal').required(),
 });
 
 const updateContactSchema = Joi.object({
@@ -21,7 +29,7 @@ const updateContactSchema = Joi.object({
     .optional(),
   email: Joi.string().email().optional(),
   isFavourite: Joi.boolean().optional(),
-  contactType: Joi.string().valid('work', 'home', 'personal').optional(), // Обновлено на work, home, personal
+  contactType: Joi.string().valid('work', 'home', 'personal').optional(),
 });
 
 export const getContacts = async (req, res, next) => {
@@ -34,7 +42,7 @@ export const getContacts = async (req, res, next) => {
     contactType,
   } = req.query;
 
-  const filter = { userId: req.user._id }; // Фильтруем по userId
+  const filter = { userId: req.user._id };
   if (isFavourite !== undefined) filter.isFavourite = isFavourite === 'true';
   if (contactType) filter.contactType = contactType;
 
@@ -93,9 +101,17 @@ export const addContact = async (req, res, next) => {
   if (error) throw createError(400, error.details[0].message);
 
   try {
+    let photoUrl = null;
+    if (req.file) {
+      // Загружаем фото на Cloudinary
+      const result = await cloudinary.v2.uploader.upload(req.file.path);
+      photoUrl = result.secure_url; // Получаем ссылку на фото
+    }
+
     const newContact = await Contact.create({
       ...req.body,
       userId: req.user._id,
+      photo: photoUrl, // Сохраняем ссылку на фото
     });
 
     res.status(201).json({
@@ -114,9 +130,19 @@ export const updateContact = async (req, res, next) => {
   if (error) throw createError(400, error.details[0].message);
 
   try {
+    let photoUrl = null;
+    if (req.file) {
+      // Загружаем фото на Cloudinary
+      const result = await cloudinary.v2.uploader.upload(req.file.path);
+      photoUrl = result.secure_url; // Получаем ссылку на фото
+    }
+
     const updatedContact = await Contact.findOneAndUpdate(
       { _id: contactId, userId: req.user._id },
-      req.body,
+      {
+        ...req.body,
+        photo: photoUrl ? photoUrl : undefined, // Обновляем фото только если оно новое
+      },
       { new: true, runValidators: true },
     );
 

@@ -1,7 +1,7 @@
 //src/services/authService.js
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import User from '../models/userModel.js';
+import { User } from '../models/userModel.js';
 import Session from '../models/sessionModel.js'; // Импорт модели сессии
 import createError from 'http-errors';
 

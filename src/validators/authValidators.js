@@ -38,3 +38,16 @@ export const loginSchema = Joi.object({
     'any.required': 'Password is required',
   }),
 });
+
+// Схема для сброса пароля
+export const resetPasswordSchema = Joi.object({
+  token: Joi.string().required().messages({
+    'string.base': '"Token" should be a type of "text"',
+    'any.required': '"Token" is required',
+  }),
+  password: Joi.string().min(6).required().messages({
+    'string.base': '"Password" should be a type of "text"',
+    'string.min': '"Password" should have a minimum length of 6 characters',
+    'any.required': '"Password" is required',
+  }),
+});
