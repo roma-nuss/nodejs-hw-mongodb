@@ -1,14 +1,19 @@
+//src/db/initMongoConnection.js
 import mongoose from 'mongoose';
-
-export async function initMongoConnection() {
+import { getEnvVar } from '../utils/getEnvVar.js';
+export const initMongoConnection = async () => {
   try {
-    const mongoURI = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URL}/${process.env.MONGODB_DB}?retryWrites=true&w=majority`;
-    await mongoose.connect(mongoURI, {
-      // Ніяких додаткових опцій більше не потрібно для Mongoose 6+
-    });
+    const user = getEnvVar('MONGODB_USER');
+    const pwd = getEnvVar('MONGODB_PASSWORD');
+    const url = getEnvVar('MONGODB_URL');
+    const db = getEnvVar('MONGODB_DB');
+
+    await mongoose.connect(
+      `mongodb+srv://${user}:${pwd}@${url}/${db}?retryWrites=true&w=majority`,
+    );
     console.log('Mongo connection successfully established!');
-  } catch (error) {
-    console.error('Mongo connection failed', error);
-    throw error; // Кидайте помилку, щоб сервер зупинився
+  } catch (e) {
+    console.log('Error while setting up mongo connection', e);
+    throw e;
   }
-}
+};
