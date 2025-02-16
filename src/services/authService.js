@@ -1,4 +1,4 @@
-//src/services/authService.js
+// src/services/authService.js
 import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { UsersCollection } from '../db/models/userModel.js';
@@ -81,6 +81,8 @@ export const logoutUser = async (sessionId) => {
 };
 
 export const requestResetToken = async (email) => {
+  console.log('Attempting to send reset email to:', email); // Логируем email перед отправкой
+
   const user = await UsersCollection.findOne({ email });
   if (!user) throw createHttpError(404, 'User not found');
   const resetToken = jwt.sign(
@@ -105,6 +107,7 @@ export const requestResetToken = async (email) => {
     name: user.name,
     link: `${getEnvVar('APP_DOMAIN')}/reset-password?token=${resetToken}`,
   });
+
   try {
     await sendEmail({
       from: getEnvVar(SMTP.SMTP_FROM),
@@ -112,7 +115,9 @@ export const requestResetToken = async (email) => {
       subject: 'Reset your password',
       html,
     });
-  } catch {
+    console.log('Reset password email sent successfully to:', email); // Логируем успешную отправку
+  } catch (error) {
+    console.error('Failed to send reset password email:', error.message); // Логируем ошибку, если отправка не удалась
     throw createHttpError(
       500,
       'Failed to send the email, please try again later.',
