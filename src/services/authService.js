@@ -125,13 +125,16 @@ export const requestResetToken = async (email) => {
   }
 };
 
+// Новый метод для сброса пароля
 export const resetPassword = async (payload) => {
   let entries;
   try {
+    // Верификация токена
     entries = jwt.verify(payload.token, getEnvVar('JWT_SECRET'));
   } catch {
     throw createHttpError(401, 'Token is expired or invalid.');
   }
+
   const user = await UsersCollection.findOne({
     email: entries.email,
     _id: entries.sub,
@@ -141,8 +144,19 @@ export const resetPassword = async (payload) => {
 
   const encryptedPassword = await bcrypt.hash(payload.password, 10);
 
+  // Обновление пароля пользователя
   await UsersCollection.updateOne(
     { _id: user._id },
     { password: encryptedPassword },
   );
+
+  // Удаляем сессию пользователя после успешного сброса пароля
+  await SessionsCollection.deleteOne({ userId: user._id });
+
+  // Возвращаем успешный ответ
+  return {
+    status: 200,
+    message: 'Password has been successfully reset.',
+    data: {},
+  };
 };

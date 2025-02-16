@@ -1,4 +1,4 @@
-//src/controllers/authController.js
+// src/controllers/authController.js
 
 // Импорт константы для времени жизни куки
 import { THIRTY_DAYS } from '../constants/constants.js';
@@ -97,7 +97,8 @@ export const requestResetEmailController = async (req, res) => {
 
 // Контроллер для сброса пароля
 export const resetPasswordController = async (req, res) => {
-  await resetPassword(req.body); // Выполняем сброс пароля через сервис
+  // Выполняем сброс пароля через сервис
+  await resetPassword(req.body);
   res.json({
     message: 'Password was successfully reset!', // Сообщение о сбросе пароля
     status: 200,
