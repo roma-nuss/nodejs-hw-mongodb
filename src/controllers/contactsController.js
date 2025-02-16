@@ -65,16 +65,42 @@ export const getContactByIdController = async (req, res) => {
 
 // Контроллер для создания нового контакта
 export const createContactController = async (req, res) => {
-  const contactData = { ...req.body, userId: req.user._id }; // Добавляем ID пользователя к данным контакта
-  // Создаем контакт через сервис
-  const contact = await createContact(contactData);
+  const { file, body } = req; // Получаем файл и данные тела запроса
+  const contactData = { ...body, userId: req.user._id }; // Добавляем ID пользователя к данным контакта
 
-  // Отправляем успешный ответ с данными нового контакта
-  res.status(201).json({
-    status: 201,
-    message: 'Successfully created a contact!',
-    data: contact,
-  });
+  let photoUrl;
+
+  // Проверка наличия файла перед сохранением
+  if (file) {
+    try {
+      if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+        photoUrl = await saveFileToCloudinary(file); // Сохраняем в Cloudinary
+      } else {
+        photoUrl = await saveFileToUploadDir(file); // Сохраняем в локальную директорию
+      }
+    } catch {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to upload photo',
+      });
+    }
+  }
+
+  contactData.photo = photoUrl;
+
+  try {
+    const contact = await createContact(contactData);
+    res.status(201).json({
+      status: 201,
+      message: 'Successfully created a contact!',
+      data: contact,
+    });
+  } catch {
+    res.status(400).json({
+      status: 'error',
+      message: 'Failed to create contact',
+    });
+  }
 };
 
 // Контроллер для обновления контакта (PATCH)
@@ -86,10 +112,17 @@ export const patchContactController = async (req, res, next) => {
 
   // Если файл фотографии есть, сохраняем его в Cloudinary или локально
   if (photo) {
-    if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
-      photoUrl = await saveFileToCloudinary(photo); // Сохраняем в Cloudinary
-    } else {
-      photoUrl = await saveFileToUploadDir(photo); // Сохраняем в локальную директорию
+    try {
+      if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+        photoUrl = await saveFileToCloudinary(photo); // Сохраняем в Cloudinary
+      } else {
+        photoUrl = await saveFileToUploadDir(photo); // Сохраняем в локальную директорию
+      }
+    } catch {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to upload photo',
+      });
     }
   }
 
