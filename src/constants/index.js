@@ -24,7 +24,7 @@ export const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
 // Экспорт объекта Cloudinary с ключами для конфигурации API Cloudinary
 export const CLOUDINARY = {
-  CLOUD_NAME: 'CLOUD_NAME', // Имя облака Cloudinary
-  API_KEY: 'API_KEY', // API ключ Cloudinary
-  API_SECRET: 'API_SECRET', // API секрет Cloudinary
+  CLOUD_NAME: 'CLOUDINARY_CLOUD_NAME',
+  API_KEY: 'CLOUDINARY_API_KEY',
+  API_SECRET: 'CLOUDINARY_API_SECRET',
 };
