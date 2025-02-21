@@ -1,0 +1,10 @@
+NotFoundError:
+  description: Ресурс не найден
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            example: 'Контакт не найден'

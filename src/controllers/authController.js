@@ -2,6 +2,7 @@
 
 // Импорт константы для времени жизни куки
 import { THIRTY_DAYS } from '../constants/constants.js';
+import { generateAuthUrl } from '../utils/googleOAuth2.js';
 // Импорт функций из сервиса для работы с пользователями
 import {
   loginUser, // Логика для логина пользователя
@@ -11,6 +12,7 @@ import {
   requestResetToken, // Логика для запроса сброса пароля
   resetPassword, // Логика для сброса пароля
 } from '../services/authService.js';
+import { loginOrSignupWithGoogle } from '../services/authService.js';
 
 // Контроллер для регистрации пользователя
 export const registerUserController = async (req, res) => {
@@ -103,5 +105,29 @@ export const resetPasswordController = async (req, res) => {
     message: 'Password was successfully reset!', // Сообщение о сбросе пароля
     status: 200,
     data: {}, // Пустые данные
+  });
+};
+
+export const getGoogleOAuthUrlController = async (req, res) => {
+  const url = generateAuthUrl();
+  res.json({
+    status: 200,
+    message: 'Successfully get Google OAuth url!',
+    data: {
+      url,
+    },
+  });
+};
+
+export const loginWithGoogleController = async (req, res) => {
+  const session = await loginOrSignupWithGoogle(req.body.code);
+  setupSession(res, session);
+
+  res.json({
+    status: 200,
+    message: 'Successfully logged in via Google OAuth!',
+    data: {
+      accessToken: session.accessToken,
+    },
   });
 };
