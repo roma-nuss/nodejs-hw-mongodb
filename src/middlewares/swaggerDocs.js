@@ -1,3 +1,5 @@
+//src/middlewares/swaggerDocs.js
+
 import createHttpError from 'http-errors';
 import swaggerUI from 'swagger-ui-express';
 import fs from 'node:fs';
