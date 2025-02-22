@@ -1,0 +1,36 @@
+type: object
+required:
+  - _id
+  - name
+  - email
+  - phone
+  - contactType
+properties:
+  _id:
+    description: "Contact's id"
+    type: string
+    example: 65e4decdd286b30065d54af9
+  name:
+    description: "Contact's name"
+    type: string
+    example: 'Jane Doe'
+  email:
+    description: "Contact's email address"
+    type: string
+    example: 'jane.doe@example.com'
+  phone:
+    description: "Contact's phone number"
+    type: string
+    example: '+123456789'
+  contactType:
+    description: 'Type of contact'
+    type: string
+    enum: ['work', 'home', 'personal']
+  address:
+    description: "Contact's address"
+    type: string
+    example: '123 Main St, Springfield, USA'
+  avatar:
+    description: "Link to contact's avatar"
+    type: string
+    example: https://res.cloudinary.com/uqwgdu/image/upload/avatar.png

@@ -1,0 +1,25 @@
+tags:
+  - Contacts
+summary: Delete contact by ID
+operationId: deleteContactById
+description: Delete a specific contact by its ID.
+security:
+  - bearerAuth: []
+parameters:
+  - in: path
+    name: contactId
+    required: true
+    schema:
+      type: string
+      example: 65ca67e7ae7f10c88b598384
+responses:
+  '200':
+    description: Successfully deleted the contact.
+    content:
+      application/json:
+        schema:
+          $ref: '/swagger/components/responses/200.yaml'
+  '404':
+    $ref: '/swagger/components/responses/404.yaml'
+  '401':
+    $ref: '/swagger/components/responses/401.yaml'
