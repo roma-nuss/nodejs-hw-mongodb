@@ -1,0 +1,130 @@
+openapi: 3.1.0
+info:
+  version: 1.0.0
+  title: Students app
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  description: This is a documentation of students app
+tags:
+  - name: Students
+    description: Operations about students.
+  - name: Auth
+    description: Auth operations.
+servers:
+  - url: https://contacts-app-ycri.onrender.com # правильный URL вашего приложения на Render
+  - url: https://example.com/api/v1
+paths:
+  /students:
+    get:
+      $ref: ../swagger/paths/students/get.yaml
+    post:
+      $ref: ../swagger/paths/students/post.yaml
+  /students/{id}:
+    get:
+      $ref: ../swagger/paths/students/{id}/get.yaml
+    patch:
+      $ref: ../swagger/paths/students/{id}/patch.yaml
+    delete:
+      $ref: ../swagger/paths/students/{id}/delete.yaml
+  /api-docs: # путь для отображения документации
+    get:
+      summary: Swagger UI documentation
+      description: Displays the Swagger UI for API documentation.
+      operationId: getSwaggerDocs
+      responses:
+        '200':
+          description: Successfully retrieved Swagger UI documentation
+          content:
+            text/html:
+              schema:
+                type: string
+                example: 'HTML content of Swagger UI'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    student:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the student
+        name:
+          type: string
+          description: The student's full name
+        age:
+          type: integer
+          description: The student's age
+        email:
+          type: string
+          description: The student's email address
+      required:
+        - id
+        - name
+        - email
+    student-2: # Новый вариант схемы student
+      type: object
+      required:
+        - _id
+        - name
+        - age
+        - gender
+        - avgMark
+        - onDuty
+      properties:
+        _id:
+          description: "Student's id"
+          type: string
+          example: 65e4decdd286b30065d54af9
+        name:
+          description: "Student's name"
+          type: string
+          example: 'John Doe'
+        age:
+          description: "Student's age"
+          type: number
+          example: 12
+        gender:
+          description: "Student's gender"
+          type: string
+          enum: ['male', 'female', 'other']
+        avgMark:
+          description: "Student's average mark. Should be between 1 and 12"
+          type: number
+          example: 9.7
+        onDuty:
+          description: 'Whether the student is on duty'
+          type: boolean
+          example: false
+        parentId:
+          description: "Student's parent id"
+          type: string
+          example: 65e4decdd286b30065d54af9
+        photo:
+          description: "Link to student's photo"
+          type: string
+          example: https://res.cloudinary.com/uqwgdu/image/upload/image.png
+  responses:
+    studentNotFound:
+      description: Student not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: 'Student not found'
+    unauthorized:
+      description: Unauthorized request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: 'Unauthorized'

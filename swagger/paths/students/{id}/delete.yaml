@@ -1,0 +1,20 @@
+# //swagger/paths/students/{id}/delete.yaml
+tags:
+  - Students
+summary: Delete student by ID
+operationId: deleteStudent
+description: 'Delete a student by ID.'
+security:
+  - bearerAuth: []
+parameters:
+  - in: path
+    name: studentId
+    required: true
+    schema:
+      type: string
+    description: 'The ID of the student to delete.'
+responses:
+  '200':
+    description: Student deleted successfully!
+  '404':
+    description: Student not found!

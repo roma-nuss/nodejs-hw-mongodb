@@ -1,0 +1,26 @@
+{
+  'status': 200,
+  'message': 'Successfully found students!',
+  'data':
+    {
+      'data':
+        [
+          {
+            '_id': '65e4decdd286b30065d54af9',
+            'name': 'John Doe',
+            'age': 12,
+            'gender': 'male',
+            'avgMark': 9.7,
+            'onDuty': false,
+            'parentId': '65e4decdd286b30065d54af9',
+            'photo': 'https://res.cloudinary.com/uqwgdu/image/upload/image.png',
+          },
+        ],
+      'page': 2,
+      'perPage': 4,
+      'totalItems': 4,
+      'totalPages': 4,
+      'hasNextPage': false,
+      'hasPreviousPage': true,
+    },
+}
