@@ -1,4 +1,4 @@
-//src/server.js
+// src/server.js
 import express from 'express';
 import pino from 'pino-http';
 import cors from 'cors';
@@ -8,7 +8,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 import cookieParser from 'cookie-parser';
 import { UPLOAD_DIR } from './constants/index.js';
-import { swaggerDocs } from './middlewares/swaggerDocs.js';
+import { swaggerDocs, swaggerServe } from './middlewares/swaggerDocs.js';
 
 const PORT = Number(getEnvVar('PORT', '3000'));
 
@@ -26,8 +26,11 @@ export const setupServer = () => {
   app.use(cors());
   app.use(cookieParser());
 
-  // Роут для документации Swagger
-  app.use('/api-docs', swaggerDocs());
+  // Роут для статических файлов Swagger UI
+  app.use('/api-docs', swaggerServe); // Swagger UI будет доступен по /api-docs
+
+  // Роут для Swagger документации
+  app.use('/api-docs', swaggerDocs()); // Здесь будет отображаться документация
 
   app.use(router);
 
