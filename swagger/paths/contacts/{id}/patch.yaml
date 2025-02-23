@@ -16,15 +16,15 @@ requestBody:
   content:
     application/json:
       schema:
-        $ref: '../../components/schemas/contact.yaml'
+        $ref: '../../../components/schemas/contact.yaml'
 responses:
   '200':
     description: Contact successfully updated.
     content:
       application/json:
         schema:
-          $ref: '../../components/schemas/contact.yaml'
+          $ref: '../../../components/schemas/contact.yaml'
   '404':
-    $ref: '../../components/responses/404.yaml'
+    $ref: '../../../components/responses/404.yaml'
   '401':
-    $ref: '../../components/responses/401.yaml'
+    $ref: '../../../components/responses/401.yaml'

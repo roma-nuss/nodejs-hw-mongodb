@@ -18,8 +18,8 @@ responses:
     content:
       application/json:
         schema:
-          $ref: '/swagger/components/responses/200.yaml'
+          $ref: '../../../components/responses/200.yaml'
   '404':
-    $ref: '/swagger/components/responses/404.yaml'
+    $ref: '../../../components/responses/404.yaml'
   '401':
-    $ref: '/swagger/components/responses/401.yaml'
+    $ref: '../../../components/responses/401.yaml'
