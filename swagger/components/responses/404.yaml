@@ -6,10 +6,19 @@ content:
       required:
         - status
         - message
+        - data
       properties:
         status:
           type: integer
           example: 404
         message:
           type: string
-          example: 'Contact not found'
+          example: NotFoundError
+        data:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+              example: 'Contact not found'
