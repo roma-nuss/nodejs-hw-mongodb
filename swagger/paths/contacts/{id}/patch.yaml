@@ -14,9 +14,23 @@ parameters:
       example: 65ca67e7ae7f10c88b598384
 requestBody:
   content:
-    application/json:
+    multipart/form-data:
       schema:
-        $ref: '../../../components/schemas/contact.yaml'
+        type: object
+        properties:
+          name:
+            type: string
+            example: 'John Doe'
+          email:
+            type: string
+            example: 'johndoe@example.com'
+          phone:
+            type: string
+            example: '+123456789'
+          # добавьте другие поля, которые можно обновить
+        required:
+          - name
+          - email
 responses:
   '200':
     description: Contact successfully updated.

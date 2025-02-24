@@ -7,9 +7,24 @@ security:
   - bearerAuth: []
 requestBody:
   content:
-    application/json:
+    multipart/form-data:
       schema:
-        $ref: '../../components/schemas/contact.yaml'
+        type: object
+        properties:
+          name:
+            type: string
+            example: 'John Doe'
+          email:
+            type: string
+            example: 'johndoe@example.com'
+          # добавьте другие поля, которые вы хотите принимать, например:
+          phone:
+            type: string
+            example: '+123456789'
+          # другие поля, кроме avatar, address, phone
+        required:
+          - name
+          - email
 responses:
   '201':
     description: Contact successfully created.
