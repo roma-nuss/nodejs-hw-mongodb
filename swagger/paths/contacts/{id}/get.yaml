@@ -1,3 +1,33 @@
+# tags:
+#   - Contacts
+# summary: Get contact by ID
+# operationId: getContactById
+# description: Retrieve a specific contact by its ID.
+# security:
+#   - bearerAuth: []
+# parameters:
+#   - in: path
+#     name: contactId
+#     required: true
+#     schema:
+#       type: string
+#       example: 65ca67e7ae7f10c88b598384
+# responses:
+#   '200':
+#     description: Successfully retrieved the contact!
+#     content:
+#       application/json:
+#         schema:
+#           $ref: '../../../components/schemas/contact.yaml'
+#   '404':
+#     description: Contact not found
+#     content:
+#       application/json:
+#         schema:
+#           $ref: '../../../components/responses/404.yaml'
+#   '401':
+#     $ref: '../../../components/responses/401.yaml'
+
 tags:
   - Contacts
 summary: Get contact by ID
@@ -20,10 +50,6 @@ responses:
         schema:
           $ref: '../../../components/schemas/contact.yaml'
   '404':
-    description: Contact not found
-    content:
-      application/json:
-        schema:
-          $ref: '../../../components/responses/404.yaml'
+    $ref: '../../../components/responses/404.yaml'
   '401':
     $ref: '../../../components/responses/401.yaml'
