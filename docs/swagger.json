@@ -108,28 +108,11 @@
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "multipart/form-data": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "example": "John Doe"
-                  },
-                  "email": {
-                    "type": "string",
-                    "example": "johndoe@example.com"
-                  },
-                  "phone": {
-                    "type": "string",
-                    "example": "+123456789"
-                  }
-                },
-                "required": [
-                  "name",
-                  "email"
-                ]
+                "$ref": "#/components/schemas/contact"
               }
             }
           }
@@ -218,28 +201,11 @@
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "multipart/form-data": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "example": "John Doe"
-                  },
-                  "email": {
-                    "type": "string",
-                    "example": "johndoe@example.com"
-                  },
-                  "phone": {
-                    "type": "string",
-                    "example": "+123456789"
-                  }
-                },
-                "required": [
-                  "name",
-                  "email"
-                ]
+                "$ref": "#/components/schemas/contact"
               }
             }
           }
@@ -358,7 +324,7 @@
           "_id",
           "name",
           "email",
-          "phone",
+          "phoneNumber",
           "contactType"
         ],
         "properties": {
@@ -377,7 +343,7 @@
             "type": "string",
             "example": "jane.doe@example.com"
           },
-          "phone": {
+          "phoneNumber": {
             "description": "Contact's phone number",
             "type": "string",
             "example": "+123456789"
@@ -391,15 +357,16 @@
               "personal"
             ]
           },
-          "address": {
-            "description": "Contact's address",
-            "type": "string",
-            "example": "123 Main St, Springfield, USA"
+          "isFavourite": {
+            "description": "Indicates if the contact is marked as favourite",
+            "type": "boolean",
+            "example": true
           },
-          "avatar": {
-            "description": "Link to contact's avatar",
+          "photo": {
+            "description": "Link to contact's photo",
             "type": "string",
-            "example": "https://res.cloudinary.com/uqwgdu/image/upload/avatar.png"
+            "nullable": true,
+            "example": "https://res.cloudinary.com/demo/image/upload/sample.jpg"
           }
         }
       }

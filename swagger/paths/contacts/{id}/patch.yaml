@@ -13,24 +13,11 @@ parameters:
       type: string
       example: 65ca67e7ae7f10c88b598384
 requestBody:
+  required: true
   content:
     multipart/form-data:
       schema:
-        type: object
-        properties:
-          name:
-            type: string
-            example: 'John Doe'
-          email:
-            type: string
-            example: 'johndoe@example.com'
-          phone:
-            type: string
-            example: '+123456789'
-          # добавьте другие поля, которые можно обновить
-        required:
-          - name
-          - email
+        $ref: '../../../components/schemas/contact.yaml'
 responses:
   '200':
     description: Contact successfully updated.
