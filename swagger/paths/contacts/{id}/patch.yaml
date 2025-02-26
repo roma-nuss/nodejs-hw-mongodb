@@ -17,7 +17,27 @@ requestBody:
   content:
     multipart/form-data:
       schema:
-        $ref: '../../../components/schemas/contact.yaml'
+        type: object
+        properties:
+          name:
+            type: string
+            example: 'John Doe'
+          email:
+            type: string
+            example: 'johndoe@example.com'
+          phoneNumber:
+            type: string
+            example: '+123456789'
+          isFavourite:
+            type: boolean
+            example: true
+          contactType:
+            type: string
+            enum: ['work', 'home', 'personal']
+            example: 'home'
+          photo:
+            type: string
+            format: binary
 responses:
   '200':
     description: Contact successfully updated.
