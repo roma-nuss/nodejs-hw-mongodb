@@ -2,7 +2,7 @@ tags:
   - Contacts
 summary: Delete contact by ID
 operationId: deleteContactById
-description: Delete a contact by its ID.
+description: Delete a specific contact by its ID.
 security:
   - bearerAuth: []
 parameters:
@@ -14,4 +14,8 @@ parameters:
       example: 65ca67e7ae7f10c88b598384
 responses:
   '204':
-    description: No Content
+    description: Successfully deleted the contact.
+  '404':
+    $ref: '../../../components/responses/404.yaml'
+  '401':
+    $ref: '../../../components/responses/401.yaml'

@@ -301,7 +301,7 @@
         ],
         "summary": "Delete contact by ID",
         "operationId": "deleteContactById",
-        "description": "Delete a contact by its ID.",
+        "description": "Delete a specific contact by its ID.",
         "security": [
           {
             "bearerAuth": []
@@ -320,7 +320,13 @@
         ],
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "Successfully deleted the contact."
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
           }
         }
       }
