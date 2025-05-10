@@ -1,31 +1,26 @@
+// src/server.js
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
-import contactsRoutes from './routes/contactsRoutes.js';
+import contactsRouter from './routes/contactsRoutes.js'; // Подключаем маршруты
 
 export function setupServer() {
   const logger = pino({ transport: { target: 'pino-pretty' } });
   const app = express();
 
-  // Вмикаємо CORS
   app.use(cors());
-
-  // Логування запитів
   app.use(pinoHttp({ logger }));
-
-  // Додаємо парсинг JSON для body запитів
   app.use(express.json());
 
-  // Підключаємо маршрути
-  app.use('/api/contacts', contactsRoutes);
+  app.use('/contacts', contactsRouter);
 
-  // Обробка помилок для невідомих маршрутів
-  app.use((req, res, next) => {
+  // Обработка 404
+  app.use((req, res) => {
     res.status(404).json({ message: 'Not found' });
   });
 
-  // Глобальна обробка помилок
+  // Обработка ошибок
   app.use((err, req, res, next) => {
     logger.error(err);
     res.status(err.status || 500).json({
@@ -33,9 +28,5 @@ export function setupServer() {
     });
   });
 
-  // Запуск сервера
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
-  });
+  return app;
 }
