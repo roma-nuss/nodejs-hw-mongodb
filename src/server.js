@@ -1,41 +1,49 @@
+// src/server.js
 import express from 'express';
+import pino from 'pino-http';
 import cors from 'cors';
-import pino from 'pino';
-import pinoHttp from 'pino-http';
-import contactsRoutes from './routes/contactsRoutes.js';
+import { getEnvVar } from './utils/getEnvVar.js';
+import router from './routers/index.js';
+import { errorHandler } from './middlewares/errorHandler.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
+import cookieParser from 'cookie-parser';
+import { UPLOAD_DIR } from './constants/index.js';
+import { swaggerDocs, swaggerServe } from './middlewares/swaggerDocs.js';
 
-export function setupServer() {
-  const logger = pino({ transport: { target: 'pino-pretty' } });
+const PORT = Number(getEnvVar('PORT', '3000'));
+
+export const setupServer = () => {
   const app = express();
 
-  // Вмикаємо CORS
-  app.use(cors());
-
-  // Логування запитів
-  app.use(pinoHttp({ logger }));
-
-  // Додаємо парсинг JSON для body запитів
   app.use(express.json());
+  app.use(
+    pino({
+      transport: {
+        target: 'pino-pretty',
+      },
+    }),
+  );
+  app.use(cors());
+  app.use(cookieParser());
 
-  // Підключаємо маршрути
-  app.use('/api/contacts', contactsRoutes);
+  // Роут для статических файлов Swagger UI
+  app.use('/api-docs', swaggerServe); // Swagger UI будет доступен по /api-docs
 
-  // Обробка помилок для невідомих маршрутів
-  app.use((req, res, next) => {
-    res.status(404).json({ message: 'Not found' });
-  });
+  // Роут для Swagger документации
+  app.use('/api-docs', swaggerDocs()); // Здесь будет отображаться документация
 
-  // Глобальна обробка помилок
-  app.use((err, req, res, next) => {
-    logger.error(err);
-    res.status(err.status || 500).json({
-      message: err.message || 'Internal Server Error',
-    });
-  });
+  app.use(router);
 
-  // Запуск сервера
-  const PORT = process.env.PORT || 3000;
+  // Роут для загрузок
+  app.use('/uploads', express.static(UPLOAD_DIR));
+
+  // Обработка 404
+  app.use('*', notFoundHandler);
+
+  // Обработчик ошибок
+  app.use(errorHandler);
+
   app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
   });
-}
+};
